@@ -1,0 +1,37 @@
+# fails a PR into dev unless its title and every commit start with CS-<issue number>
+# the title matters most: squash merges use it as the commit on dev
+name: commit format
+
+on:
+  pull_request:
+    branches: [dev]
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  commit-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: check pr title and commit messages
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^CS-[0-9]+ [^ ]'
+          ok=1
+          if ! grep -Eq "$pattern" <<< "$TITLE"; then
+            echo "::error::PR title must look like 'CS-12 add reservation model', got: $TITLE"
+            ok=0
+          fi
+          while IFS= read -r subject; do
+            if grep -Eq '^(Merge|Revert) ' <<< "$subject"; then continue; fi
+            if ! grep -Eq "$pattern" <<< "$subject"; then
+              echo "::error::commit must look like 'CS-12 add reservation model', got: $subject"
+              ok=0
+            fi
+          done < <(git log --format=%s "$BASE..$HEAD")
+          [ "$ok" = 1 ]

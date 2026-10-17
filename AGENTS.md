@@ -18,6 +18,7 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 | `scrum/sprint_#/` | `planning.md`, `daily_scrums.md`, `review.md`, `retrospective.md`, `board.png`. |
 | `tests/` | The Selenium test and `manual-tests.md`. |
 | `Dockerfile`, `docker-compose.yml` | `db` (postgres + named volume) and `web` (waits for `db`). |
+| `.github/workflows/commit-format.yml`, `.githooks/commit-msg` | The `CS-##` commit format check on PRs into `dev`, and its local hook. |
 | `.env.example` | Placeholder values for `DATABASE_URL` and `SECRET_KEY`. `.env` itself is never committed. |
 | `burndown.xlsx` | Ideal, planned and actual lines, filled at the end. |
 | `.agents/skills/` | Workflow skills, one `SKILL.md` per folder. |
@@ -40,13 +41,14 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 
 | Branch | Rule |
 |---|---|
-| `main` | Reached only by merging `dev` at sprint end. The merge commit is tagged `v1`/`v2`/`v3`. |
-| `dev` | Integration. Created from `main` at the start. Everything lands here through a reviewed PR. |
-| `US#-short-slug` | One task or story, off `dev`, e.g. `US4-reserve-portions`. Deleted after merge. |
+| `main` | Releases only. Reached by a PR from `dev` at sprint end, merged with **"Create a merge commit"** (the only method the `Protect main` ruleset allows). The merge commit is tagged `v1`/`v2`/`v3`. |
+| `dev` | The default branch and integration. Everything lands here through a reviewed PR merged with **"Squash and merge"** (the only method the `Protect dev` ruleset allows). |
+| `US#-short-slug` | One task or story, off `dev`, e.g. `US4-reserve-portions`. Deleted automatically after merge. |
 
-- PRs into `dev` are reviewed and approved by a teammate **other than the author**. `dev`'s history must show merges from every team member - spread the work so it does.
+- PRs into `dev` are reviewed and approved by a teammate **other than the author** (enforced: 1 approval). `dev`'s history must show work from every team member - spread the work so it does.
 - Each PR links the GitHub issue it closes (`Closes #12`).
-- Commits: one logical change, present tense, lowercase, no trailing period, issue referenced: `add reservation model with pickup code (#12)`.
+- Commits and PR titles: `CS-<issue number> <message>` - one logical change, present tense, lowercase, no trailing period: `CS-12 add reservation model with pickup code`. The squash commit on `dev` takes the PR title, so the title matters most.
+- The `commit format` GitHub Actions check fails a PR into `dev` whose title or commits break the format. Turn on the matching local hook once per clone: `git config core.hooksPath .githooks`.
 - Never rewrite pushed history.
 
 ## Skills
