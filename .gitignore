@@ -1,0 +1,46 @@
+# Virtual environment - the assignment requires this stays out of the repo
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets and local config - the assignment requires .env stays out of the repo.
+# .env.example is committed with placeholder values.
+.env
+.env.*
+!.env.example
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Tests and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Selenium and browser driver output
+geckodriver.log
+chromedriver.log
+screenshots/
+
+# Flask-Migrate creates migrations/ - that folder IS committed. The database lives
+# in a Docker volume, so there is no database file to ignore. These catch a stray
+# local SQLite file if someone runs the app outside Compose.
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

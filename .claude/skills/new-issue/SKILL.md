@@ -78,10 +78,13 @@ Fill this in at Sprint 0 - the team need not be the same as Project 1. The assig
 
 | Person | GitHub | Role |
 |---|---|---|
-| `<name>` | `<login>` | Scrum Master |
-| `<name>` | `<login>` | Developer |
+| Aden Lytle | `AdenPotato` | Scrum Master, repo owner, developer, tester, documenter |
+| Johnny (Juan) De La Garza | `jdelagar` | Developer, tester |
+| Isabella Eaton | `ellaevelynn` | Tester, documenter |
+| Elijah Damian-Ortiz | `damian-ortiz-elijah` | Developer, tester |
+| Hilb Yeromin | `<login>` | Developer, tester, documenter |
 
-Board: `<board name and URL>`, columns **To Do, In Progress, In Review, Done** (the minimum the assignment requires).
+Board: [CS3250 Project 2 Board](https://github.com/users/AdenPotato/projects/6), columns **To Do, In Progress, In Review, Done**. Set each card's **Sprint**, **Story Points**, **Priority** and **Item Type** fields when it is added.
 
 ## Constraints
 
