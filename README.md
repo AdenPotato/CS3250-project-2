@@ -113,17 +113,17 @@ Before Sprint 1 starts, your team estimates every story and ranks the backlog us
 
 | ID | Short name | User value | Story points | Priority score | Rank |
 | --- | --- | --- | --- | --- | --- |
-| US1 | Register and log in | 3 |  |  |  |
-| US2 | Post a listing | 3 |  |  |  |
-| US3 | Browse listings | 3 |  |  |  |
-| US4 | Reserve portions | 3 |  |  |  |
-| US5 | Manage listings | 2 |  |  |  |
-| US6 | My reservations | 2 |  |  |  |
-| US7 | Confirm pickup | 3 |  |  |  |
-| US8 | Filter listings | 2 |  |  |  |
-| US9 | Impact dashboard | 1 |  |  |  |
-| US10 | Rate a pickup | 1 |  |  |  |
-| **Total** |  |  |  |  |  |
+| US1 | Register and log in | 3 | 5 | .60 | 1 |
+| US2 | Post a listing | 3 | 5 | .60 | 2 |
+| US3 | Browse listings | 3 | 3 | 1.00 | 3 |
+| US4 | Reserve portions | 3 | 8 | .38 | 4 |
+| US5 | Manage listings | 2 | 5 | .60 | 5 |
+| US6 | My reservations | 2 | 5 | .40 | 6 |
+| US7 | Confirm pickup | 3 | 3 | .67 | 7 |
+| US8 | Filter listings | 2 | 3 | .67 | 8 |
+| US9 | Impact dashboard | 1 | 5 | .20 | 9 |
+| US10 | Rate a pickup | 1 | 3 | .33 | 10 |
+| **Total** | - | 45pts | - | - | - |
 
 Priority Score Formula: 
 
@@ -142,21 +142,29 @@ Before writing any code, split the backlog across the three sprints and record i
 * Planned burndown: list the story points remaining at the start and after each planned sprint.
 
 ```
-Team capacity (story points per sprint): <your team's capacity>
+Team capacity (story points per sprint): <16 story points>
 
-Justification (one or two sentences: team size, hours available, course load): <justification>
+Justification (one or two sentences: team size, hours available, course load): <With 4 team members dedicating approximately 8–10 hours per week each while balancing coursework, the team commits to a sustainable velocity of 16 story points per sprint to successfully deliver all 10 user stories (45 total points).>
 ```
 
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
 | --- | --- | --- | --- | --- |
-| Sprint 1 |  |  |  |  |
-| Sprint 2 |  |  |  |  |
-| Sprint 3 |  |  |  |  |
-| **Total** |  |  | — | — |
+| Sprint 1 | US1(5), US2 (5), US3 (3) | 13 | 32 | Y |
+| Sprint 2 | US4 (8), US7 (3), US6 (5) | 16 | 16 | Y |
+| Sprint 3 |US5 (5), US8 (3), US9 (5), US10 (3)| 16 | 0 | Y |
+| **Total** | All 7 Required + Optional US8, US9, US10 (time permitting during final week) | 45 | — | — |
+
+**Key Dependency & Priority Verification**
+**Sprint 1**: Establishes core authentication (US1), vendor listing creation (US2, depends on US1), and student browsing (US3, depends on US2).
+
+**Sprint 2**: Implements reservation mechanics (US4, depends on US1 & US3) and vendor pickup confirmation (US7, depends on US4), along with student reservation management (US6, depends on US4).
+
+**Sprint 3**: Delivers vendor listing management (US5, depends on US2 & US4), optional filtering (US8, depends on US3), the optional impact dashboard (US9, depends on US7), and optional pickup ratings (US10, depends on US7).
 
 # Sprint Boards
 
 Track all tasks on a GitHub Projects board, Microsoft Teams pages, or any other tool of your preference. 
+ **Tools selected**: Github issues tab (checking status), Discord (all progress updates, sprint review, testing, scrum meetings)
 
 * Use at least these columns: To Do, In Progress, In Review, Done.
 * Create one GitHub issue per task, labeled with its user story (for example US4), assigned to its owner, and linked from the pull request that completes it.
@@ -198,6 +206,17 @@ Your team is graded on how closely it followed Scrum, so every Scrum event must 
 * Daily scrums may be held in person or asynchronously (for example in a team Discord or Teams channel), but each one must be recorded with its date in the sprint file. The Scrum Master records the notes.
 * From Sprint 2 on, the retrospective must say whether the previous sprint's actions were carried out.
 * At the end of the project, complete a burndown chart using the provided template, with three lines: ideal, planned (from your release plan), and actual story points remaining after each sprint. Add one or two sentences explaining any gap between planned and actual.
+**Tentative Sprint and Scrum meeting schedule**
+  Meetings will be recorded and conducted on Discord or in-person
+  Time of meetings: TBD
+  October 23rd-October 27th
+  members should work on this project at least 2-hrs per day to meet the 8-10 hr/week effort estimate.
+  Sprint 2
+  October 28th-November 2nd
+  members should work on this project at least 2-hrs per day to meet the 8-10 hr/week effort estimate.
+  Spring 3
+  November 3rd-November7th
+  members should work on this project at least 2-hrs per day to meet the 8-10 hr/week effort estimate.
 
 # Version Control and Releases
 
