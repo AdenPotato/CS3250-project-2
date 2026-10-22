@@ -11,7 +11,8 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 | Path | What |
 |---|---|
 | [README.md](README.md) | The assignment: backlog, acceptance criteria, sprint rules, rubric. **The source of truth.** Also holds the backlog scoring table, the release plan and the Scrum Master. |
-| `src/app/` | The application package: `__init__.py`, `models.py`, `routes.py`, `forms.py`, `templates/`, `static/`. Planned layout - update this row when the code lands. |
+| `src/app/` | The application package: `__init__.py` (the `create_app` factory, `db`, `login_manager`, `csrf`), `models.py`, `routes.py` (the `main` blueprint), `templates/` (`base.html` and pages), `static/`. `forms.py` arrives with the first form. Run from `src/` with `flask --app app run`. |
+| `requirements.txt` | Pinned direct dependencies. The PostgreSQL driver is psycopg 3, the SQLAlchemy 2.1 default for `postgresql://` URLs. |
 | `src/seed.py` | Seed accounts and sample listings, created automatically on first start. Planned. |
 | `uml/class.wsd` | Domain model: User, role, Listing, Reservation, DietaryTag. |
 | `uml/sequence-US#.wsd` | One story's full flow, browser to PostgreSQL, with an alternative path. |

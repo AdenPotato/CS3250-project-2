@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #1f2328;
+  background: #ffffff;
+}
+
+header {
+  padding: 0.75rem 1rem;
+  background: #2e7d32;
+}
+
+header a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.flash {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+}
