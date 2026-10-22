@@ -113,17 +113,17 @@ Before Sprint 1 starts, your team estimates every story and ranks the backlog us
 
 | ID | Short name | User value | Story points | Priority score | Rank |
 | --- | --- | --- | --- | --- | --- |
-| US1 | Register and log in | 3 |  |  |  |
-| US2 | Post a listing | 3 |  |  |  |
-| US3 | Browse listings | 3 |  |  |  |
-| US4 | Reserve portions | 3 |  |  |  |
-| US5 | Manage listings | 2 |  |  |  |
-| US6 | My reservations | 2 |  |  |  |
-| US7 | Confirm pickup | 3 |  |  |  |
-| US8 | Filter listings | 2 |  |  |  |
-| US9 | Impact dashboard | 1 |  |  |  |
-| US10 | Rate a pickup | 1 |  |  |  |
-| **Total** |  |  |  |  |  |
+| US1 | Register and log in | 3 | 5 | .60 | 1 |
+| US2 | Post a listing | 3 | 5 | .60 | 2 |
+| US3 | Browse listings | 3 | 3 | 1.00 | 3 |
+| US4 | Reserve portions | 3 | 8 | .38 |4  |
+| US5 | Manage listings | 2 | 5 | .40 | 5 |
+| US6 | My reservations | 2 | 3 | .67 | 6 |
+| US7 | Confirm pickup | 3 | 5 |.60  | 7 |
+| US8 | Filter listings | 2 | 3 | .67 | 8 |
+| US9 | Impact dashboard | 1 | 5 | .20 | 9 |
+| US10 | Rate a pickup | 1 | 3 | .33 | 10 |
+| **Total** |-  | 23 | 45 | - | - |
 
 Priority Score Formula: 
 
@@ -142,17 +142,17 @@ Before writing any code, split the backlog across the three sprints and record i
 * Planned burndown: list the story points remaining at the start and after each planned sprint.
 
 ```
-Team capacity (story points per sprint): <your team's capacity>
+Team capacity (story points per sprint): <16 story points per sprint>
 
-Justification (one or two sentences: team size, hours available, course load): <justification>
+Justification (one or two sentences: team size, hours available, course load): <With 5 team members balancing rigorous coursework and part-time responsibilities, each student contributes approximately 8 hours per week, establishing a reliable and sustainable team capacity of 16 story points per sprint.>
 ```
 
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
 | --- | --- | --- | --- | --- |
-| Sprint 1 |  |  |  |  |
-| Sprint 2 |  |  |  |  |
-| Sprint 3 |  |  |  |  |
-| **Total** |  |  | — | — |
+| Sprint 1 |US1 (5), US2 (5), US3 (3)| 13 | 32 |Y  |
+| Sprint 2 | US4 (8), US7 (5), US6 (3) | 16 | 16 | Y |
+| Sprint 3 |US5 (5), US8 (3), US9 (5), US10 (3)| 16 | 0 | Y |
+| **Total** | 45 | - | — | — |
 
 # Sprint Boards
 
