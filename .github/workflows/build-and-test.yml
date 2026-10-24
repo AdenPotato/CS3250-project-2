@@ -1,0 +1,47 @@
+# fails a PR into dev if the app does not compile, the containers do not build and start,
+# or the tests fail - steps skip until their files exist (compose: #4, tests: #8)
+name: build and test
+
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile the app
+        run: |
+          pip install -r requirements.txt
+          python -m compileall -q src
+
+      - name: Build and start the containers
+        if: hashFiles('docker-compose.yml') != ''
+        run: |
+          cp .env.example .env
+          docker compose up --build -d
+          # the web container waits for db, so give it up to a minute to answer
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:5000/ && exit 0
+            sleep 2
+          done
+          echo "::error::web did not answer on http://localhost:5000 within 60s"
+          exit 1
+
+      - name: Run the tests
+        if: hashFiles('docker-compose.yml') != '' && hashFiles('tests/**/test_*.py') != ''
+        run: |
+          pip install pytest selenium
+          pytest tests
+
+      - name: Container logs
+        if: failure() && hashFiles('docker-compose.yml') != ''
+        run: docker compose logs

@@ -19,6 +19,7 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 | `scrum/sprint_#/` | `planning.md`, `daily_scrums.md`, `review.md`, `retrospective.md`, `board.png`. |
 | `tests/` | The Selenium test and `manual-tests.md`. |
 | `Dockerfile`, `docker-compose.yml` | `db` (postgres + named volume) and `web` (waits for `db`). |
+| `.github/workflows/build-and-test.yml` | The `build-and-test` check on PRs into `dev`: compiles `src/`, builds and starts the Compose stack, runs `pytest tests`. |
 | `.env.example` | Placeholder values for `DATABASE_URL` and `SECRET_KEY`. `.env` itself is never committed. |
 | `burndown.xlsx` | Ideal, planned and actual lines, filled at the end. |
 | `.agents/skills/` | Workflow skills, one `SKILL.md` per folder. |
@@ -48,6 +49,7 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 - PRs into `dev` are reviewed and approved by a teammate **other than the author** (enforced: 1 approval). `dev`'s history must show work from every team member - spread the work so it does.
 - Each PR links the GitHub issue it closes (`Closes #12`).
 - Commits and PR titles: `CS-<issue number> <message>` - one logical change, present tense, lowercase, no trailing period: `CS-12 add reservation model with pickup code`. The squash commit on `dev` takes the PR title, so the title matters most.
+- The `build-and-test` check must pass before a PR into `dev` merges. It needs `.env.example` to hold values Compose can start with, since CI copies it to `.env`.
 - Never rewrite pushed history.
 
 ## Skills
