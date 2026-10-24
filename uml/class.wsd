@@ -1,12 +1,23 @@
 @startuml class
 
-class User {
-    email
-    name
-    creation_date
-    role
-    password
-    active
+enum Role {
+    STUDENT
+    VENDOR
 }
+
+class User {
+    id : int
+    name : str
+    email : str <<unique>>
+    password_hash : str
+    role : Role
+    active : bool
+    creation_date : datetime
+    --
+    set_password(password)
+    check_password(password) : bool
+}
+
+User --> Role
 
 @enduml
