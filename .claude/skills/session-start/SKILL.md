@@ -69,7 +69,7 @@ End the report with a single proposal from the **current sprint's plan**. Within
 ```
 Pick:        <issue #> - <title> (US#)
 Why now:     <one line - dependency, sprint goal, or who it unblocks>
-Branch:      US#-short-slug
+Branch:      <issue#>-short-slug
 Deliverable: <the concrete artifact> -> <the acceptance criteria it closes>
 Verified by: <Selenium, manual-tests.md rows, or both>
 Shape:       <two or three steps>
@@ -93,7 +93,7 @@ Only then:
 
 ```bash
 gh issue edit <n> --add-assignee @me     # claim it before coding
-git switch -c US#-short-slug             # off dev
+git switch -c <issue#>-short-slug        # off dev, e.g. 25-reservation-model
 ```
 
 Move the card to **In Progress** on the board.
