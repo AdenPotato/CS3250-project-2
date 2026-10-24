@@ -70,7 +70,7 @@ gh issue view <number> --json number,title,labels,assignees,milestone \
   --jq '"#\(.number) \(.title)\nlabels: \([.labels[].name] | join(", "))\nassignee: \([.assignees[].login] | join(", "))\nsprint: \(.milestone.title // "none")"'
 ```
 
-Show the URL. If the work starts now, the branch is `US#-short-slug` off `dev`, and the PR body says `Closes #<number>` so the issue is linked and closes on merge.
+Show the URL. If the work starts now, the branch is `<number>-short-slug` off `dev` (the issue number, e.g. `25-reservation-model`), and the PR body says `Closes #<number>` so the issue is linked and closes on merge.
 
 ## Team
 
