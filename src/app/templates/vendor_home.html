@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 id="vendor-home">Welcome, {{ current_user.name }}</h1>
+  <p>Post your surplus food so students can reserve it before closing time.</p>
+  {% if has_endpoint("main.new_listing") %}
+    <p><a href="{{ url_for('main.new_listing') }}">Post a listing</a></p>
+  {% endif %}
+{% endblock %}

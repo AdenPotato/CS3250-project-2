@@ -35,3 +35,9 @@ class RegisterForm(FlaskForm):
     def validate_email(self, field):
         if db.session.scalar(db.select(User).filter_by(email=field.data)):
             raise ValidationError("That email is already registered.")
+
+
+class LoginForm(FlaskForm):
+    email = StringField("Email", filters=[_normalize_email], validators=[DataRequired("Enter your email.")])
+    password = PasswordField("Password", validators=[DataRequired("Enter your password.")])
+    submit = SubmitField("Log in")
