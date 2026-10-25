@@ -3,19 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}CampusEats{% endblock %}</title>
+  <title>{% if title %}{{ title }} - {% endif %}CampusEats</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  {# endpoint, label - links appear as each story adds its route #}
+  {% if current_user.is_authenticated and current_user.is_vendor %}
+    {% set links = [("main.my_listings", "My Listings"), ("main.new_listing", "Post a listing"), ("main.confirm_pickup", "Confirm pickup")] %}
+  {% elif current_user.is_authenticated %}
+    {% set links = [("main.listings", "Listings"), ("main.my_reservations", "My Reservations")] %}
+  {% else %}
+    {% set links = [] %}
+  {% endif %}
   <header>
     <nav>
-      <a href="{{ url_for('main.index') }}">CampusEats</a>
+      <a class="brand" href="{{ url_for('main.index') }}">CampusEats</a>
+      <ul class="nav-links">
+        {% for endpoint, label in links if has_endpoint(endpoint) %}
+          <li><a id="nav-{{ endpoint.split('.')[1] | replace('_', '-') }}" href="{{ url_for(endpoint) }}">{{ label }}</a></li>
+        {% endfor %}
+      </ul>
+      <div class="nav-account">
+        {% if current_user.is_authenticated %}
+          <span id="nav-user">{{ current_user.name }} ({{ current_user.role.value }})</span>
+          {% if has_endpoint("main.logout") %}
+            {# logout changes state, so it is a POST form, not a link #}
+            <form method="post" action="{{ url_for('main.logout') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button id="nav-logout" type="submit">Log out</button>
+            </form>
+          {% endif %}
+        {% else %}
+          {% if has_endpoint("main.login") %}<a id="nav-login" href="{{ url_for('main.login') }}">Log in</a>{% endif %}
+          {% if has_endpoint("main.register") %}<a id="nav-register" href="{{ url_for('main.register') }}">Register</a>{% endif %}
+        {% endif %}
+      </div>
     </nav>
   </header>
   <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <p class="flash flash-{{ category }}">{{ message }}</p>
+        <p id="flash-{{ category }}" class="flash flash-{{ category }}" role="alert">{{ message }}</p>
       {% endfor %}
     {% endwith %}
     {% block content %}{% endblock %}

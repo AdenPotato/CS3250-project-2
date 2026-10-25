@@ -31,6 +31,11 @@ def create_app():
     from .routes import bp
     app.register_blueprint(bp)
 
+    # pages land story by story, so the nav links a page only once its route exists
+    @app.context_processor
+    def nav_helpers():
+        return {"has_endpoint": lambda name: name in app.view_functions}
+
     # the grader runs no SQL, so the schema creates itself on startup
     with app.app_context():
         db.create_all()

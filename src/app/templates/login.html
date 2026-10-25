@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_form.html" import field %}
+{# expects form with email, password and submit - built in #12 #}
+{% block content %}
+  <h1>Log in</h1>
+  <form id="login-form" method="post" action="{{ url_for('main.login') }}" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.email, "login-email", type="email") }}
+    {{ field(form.password, "login-password") }}
+    {{ form.submit(id="login-submit", value="Log in") }}
+  </form>
+  {% if has_endpoint("main.register") %}
+    <p>No account yet? <a href="{{ url_for('main.register') }}">Register</a></p>
+  {% endif %}
+{% endblock %}

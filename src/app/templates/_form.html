@@ -1,0 +1,23 @@
+{# one labelled input with its errors beside it, so an empty field is identified (US1.3) #}
+{% macro field(f, id, type=None) %}
+  <div class="field{% if f.errors %} has-error{% endif %}">
+    {{ f.label(for_=id) }}
+    {% if type %}{{ f(id=id, type=type) }}{% else %}{{ f(id=id) }}{% endif %}
+    {% for error in f.errors %}
+      <p id="{{ id }}-error" class="field-error">{{ error }}</p>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{# a radio group, one stable id per choice, e.g. register-role-student #}
+{% macro radios(f, id) %}
+  <fieldset class="field{% if f.errors %} has-error{% endif %}">
+    <legend>{{ f.label.text }}</legend>
+    {% for choice in f %}
+      <label class="choice">{{ choice(id=id ~ "-" ~ choice.data) }} {{ choice.label.text }}</label>
+    {% endfor %}
+    {% for error in f.errors %}
+      <p id="{{ id }}-error" class="field-error">{{ error }}</p>
+    {% endfor %}
+  </fieldset>
+{% endmacro %}
