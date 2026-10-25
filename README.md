@@ -1,3 +1,15 @@
+# Running CampusEats
+
+From the repository root:
+
+```
+docker compose up --build
+```
+
+Then open http://localhost:5000. No `.env` is needed - Compose falls back to development defaults. To set your own database password and secret key, copy `.env.example` to `.env` and edit it first.
+
+`docker compose down` stops the app and keeps the data; `docker compose down -v` also wipes the database.
+
 # Overview
 
 In this project your Scrum team will build **CampusEats**, a web app for rescuing surplus food on campus, over three one-week sprints. Before Sprint 1 starts, your team scores and prioritizes the Product Backlog and plans which user stories go into which sprint. During the sprints you run Scrum events, track work on a Kanban board, use Git and GitHub with one tagged release per sprint, and deploy the app with Docker Compose and PostgreSQL.

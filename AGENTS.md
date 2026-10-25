@@ -20,7 +20,7 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 | `tests/` | The Selenium test and `manual-tests.md`. |
 | `Dockerfile`, `docker-compose.yml` | `db` (postgres + named volume) and `web` (waits for `db`). |
 | `.github/workflows/build-and-test.yml` | The `build-and-test` check on PRs into `dev`: compiles `src/`, builds and starts the Compose stack, runs `pytest tests`. |
-| `.env.example` | Placeholder values for `DATABASE_URL` and `SECRET_KEY`. `.env` itself is never committed. |
+| `.env.example` | Placeholder values for `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` and `SECRET_KEY`; Compose builds `DATABASE_URL` from them. `.env` itself is never committed. |
 | `burndown.xlsx` | Ideal, planned and actual lines, filled at the end. |
 | `.agents/skills/` | Workflow skills, one `SKILL.md` per folder. |
 | `.agents/agents/` | Role briefs: `app`, `ui`, `release`, `scrum`. |
@@ -91,7 +91,7 @@ Claude Code enforces these through `.claude/settings.json`. Other tools must fol
 From the repo root:
 
 ```bash
-cp .env.example .env              # once, then fill in real values
+cp .env.example .env              # optional - compose has dev defaults without it
 docker compose up --build         # http://localhost:5000
 docker compose down               # stop, keep the data
 docker compose down -v            # stop and wipe the database volume - after a model change
