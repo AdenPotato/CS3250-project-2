@@ -10,6 +10,18 @@ Then open http://localhost:5000. No `.env` is needed - Compose falls back to dev
 
 `docker compose down` stops the app and keeps the data; `docker compose down -v` also wipes the database.
 
+## Running the tests
+
+The tests are black box: they talk to the running Compose app over HTTP, so start it first.
+
+```
+docker compose up --build -d
+pip install pytest
+pytest tests
+```
+
+They expect the app at http://localhost:5000. To test another address, set `CAMPUSEATS_URL`, e.g. `CAMPUSEATS_URL=http://localhost:8000 pytest tests`. The database checks run `docker compose exec db psql`, so run them from the repository root; they are skipped if Docker is not available.
+
 # Overview
 
 In this project your Scrum team will build **CampusEats**, a web app for rescuing surplus food on campus, over three one-week sprints. Before Sprint 1 starts, your team scores and prioritizes the Product Backlog and plans which user stories go into which sprint. During the sprints you run Scrum events, track work on a Kanban board, use Git and GitHub with one tagged release per sprint, and deploy the app with Docker Compose and PostgreSQL.
