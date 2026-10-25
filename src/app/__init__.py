@@ -25,6 +25,9 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    # @login_required sends a signed-out visitor here instead of a bare 401
+    login_manager.login_view = "main.login"
+    login_manager.login_message_category = "error"
     csrf.init_app(app)
 
     from . import models  # noqa: F401 - registers the tables before create_all

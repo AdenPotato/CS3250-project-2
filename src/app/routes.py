@@ -1,15 +1,37 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, url_for
+from functools import wraps
+
+from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import RegisterForm
+from .forms import LoginForm, RegisterForm
 from .models import Role, User
 
 bp = Blueprint("main", __name__)
 
 
+def role_required(role):
+    # login_required proves who the user is; this proves they may be here (e.g. US2.3)
+    def decorator(view):
+        @wraps(view)
+        @login_required
+        def wrapped(*args, **kwargs):
+            if current_user.role is not role:
+                abort(403)
+            return view(*args, **kwargs)
+        return wrapped
+    return decorator
+
+
+def _home_for(user):
+    return url_for("main.vendor_home" if user.is_vendor else "main.student_home")
+
+
 @bp.route("/")
 def index():
+    if current_user.is_authenticated:
+        return redirect(_home_for(current_user))
     return render_template("index.html")
 
 
@@ -28,7 +50,39 @@ def register():
             form.email.errors.append("That email is already registered.")
             return render_template("register.html", title="Register", form=form)
         flash("Account created - log in to continue.", "success")
-        # login arrives in #12; until then land on the home page
-        target = "main.login" if "main.login" in current_app.view_functions else "main.index"
-        return redirect(url_for(target))
+        return redirect(url_for("main.login"))
     return render_template("register.html", title="Register", form=form)
+
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(_home_for(current_user))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(db.select(User).filter_by(email=form.email.data))
+        # one message for unknown email and wrong password, so it does not reveal which accounts exist
+        if user and user.check_password(form.password.data) and login_user(user):
+            return redirect(_home_for(user))
+        flash("Incorrect email or password.", "error")
+    return render_template("login.html", title="Log in", form=form)
+
+
+@bp.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "success")
+    return redirect(url_for("main.login"))
+
+
+@bp.route("/student")
+@role_required(Role.STUDENT)
+def student_home():
+    return render_template("student_home.html", title="Home")
+
+
+@bp.route("/vendor")
+@role_required(Role.VENDOR)
+def vendor_home():
+    return render_template("vendor_home.html", title="Home")
