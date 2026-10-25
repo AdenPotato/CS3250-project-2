@@ -16,8 +16,37 @@ class User {
     --
     set_password(password)
     check_password(password) : bool
+    is_vendor : bool
+    is_student : bool
 }
 
+class Listing {
+    id : int
+    vendor_id : int <<FK users>>
+    title : str
+    description : str
+    portions : int <<1..100>>
+    portions_remaining : int <<0..portions>>
+    location : str <<one of CAMPUS_LOCATIONS>>
+    pickup_start : datetime
+    pickup_end : datetime <<after pickup_start>>
+    cancelled : bool
+    creation_date : datetime
+}
+
+class DietaryTag {
+    id : int
+    name : str <<unique>>
+}
+
+note right of DietaryTag
+  fixed set, created on startup:
+  vegetarian, vegan, gluten-free,
+  halal, contains nuts
+end note
+
 User --> Role
+User "1" -- "0..*" Listing : posts >
+Listing "0..*" -- "0..*" DietaryTag : tagged with >\n(listing_tags)
 
 @enduml
