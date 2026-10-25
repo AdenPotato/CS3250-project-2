@@ -27,3 +27,101 @@ main {
   border: 1px solid #c8c8c8;
   border-radius: 4px;
 }
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  color: #ffffff;
+}
+
+.nav-account form {
+  margin: 0;
+}
+
+.flash-success {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.flash-error {
+  border-color: #c62828;
+  background: #ffebee;
+}
+
+.field {
+  margin: 0 0 1rem;
+}
+
+.field label,
+.field legend {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+}
+
+fieldset.field {
+  border: 0;
+  padding: 0;
+}
+
+.field label.choice {
+  display: inline;
+  margin-right: 1rem;
+  font-weight: normal;
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"] {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.4rem;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.has-error input {
+  border-color: #c62828;
+}
+
+.field-error {
+  margin: 0.25rem 0 0;
+  color: #c62828;
+}
+
+button,
+input[type="submit"] {
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: 4px;
+  background: #2e7d32;
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+header button {
+  background: #ffffff;
+  color: #2e7d32;
+}

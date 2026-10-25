@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_form.html" import field, radios %}
+{# expects form with name, email, password, role (student/vendor radios) and submit - built in #11 #}
+{% block content %}
+  <h1>Register</h1>
+  <form id="register-form" method="post" action="{{ url_for('main.register') }}" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.name, "register-name") }}
+    {{ field(form.email, "register-email", type="email") }}
+    {{ field(form.password, "register-password") }}
+    {{ radios(form.role, "register-role") }}
+    {{ form.submit(id="register-submit", value="Register") }}
+  </form>
+  {% if has_endpoint("main.login") %}
+    <p>Already have an account? <a href="{{ url_for('main.login') }}">Log in</a></p>
+  {% endif %}
+{% endblock %}
