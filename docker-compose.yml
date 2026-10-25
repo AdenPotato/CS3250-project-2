@@ -1,0 +1,32 @@
+# values come from .env (see .env.example); the defaults let `docker compose up --build`
+# run on a fresh clone with no .env at all, which is how the app is graded
+services:
+  db:
+    # pinned to 17: postgres 18 moved its data directory, which breaks the volume path below
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-campuseats}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campuseats}
+      POSTGRES_DB: ${POSTGRES_DB:-campuseats}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-campuseats}:${POSTGRES_PASSWORD:-campuseats}@db:5432/${POSTGRES_DB:-campuseats}
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me}
+    depends_on:
+      # healthy, not just started - otherwise create_all races postgres on a cold start
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
