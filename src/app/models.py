@@ -31,6 +31,9 @@ class User(UserMixin, db.Model):
         db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
     )
 
+    # a vendor's listings; students have none
+    listings = db.relationship("Listing", back_populates="vendor", order_by="Listing.pickup_end")
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -49,6 +52,69 @@ class User(UserMixin, db.Model):
     @property
     def is_student(self):
         return self.role is Role.STUDENT
+
+
+# placeholder campus locations - a fixed list so US8 can filter by exact match; edit to match campus
+CAMPUS_LOCATIONS = (
+    "Student Union",
+    "Main Dining Hall",
+    "Library Cafe",
+    "Science Building",
+    "Recreation Center",
+)
+
+# the five tags US2.1 names, created on startup by ensure_dietary_tags
+DIETARY_TAGS = ("vegetarian", "vegan", "gluten-free", "halal", "contains nuts")
+
+listing_tags = db.Table(
+    "listing_tags",
+    db.Column("listing_id", db.ForeignKey("listings.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("tag_id", db.ForeignKey("dietary_tags.id"), primary_key=True),
+)
+
+
+class DietaryTag(db.Model):
+    __tablename__ = "dietary_tags"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+
+class Listing(db.Model):
+    __tablename__ = "listings"
+    # enforced by PostgreSQL too, so a buggy route cannot store a bad listing (US2.1, US2.2, US4.4)
+    __table_args__ = (
+        db.CheckConstraint("portions BETWEEN 1 AND 100", name="portions_range"),
+        db.CheckConstraint(
+            "portions_remaining BETWEEN 0 AND portions", name="portions_remaining_range"
+        ),
+        db.CheckConstraint("pickup_end > pickup_start", name="pickup_window_order"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.ForeignKey("users.id"), nullable=False, index=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    portions = db.Column(db.Integer, nullable=False)
+    portions_remaining = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(100), nullable=False)
+    pickup_start = db.Column(db.DateTime(timezone=True), nullable=False)
+    pickup_end = db.Column(db.DateTime(timezone=True), nullable=False)
+    cancelled = db.Column(db.Boolean, nullable=False, default=False)
+    creation_date = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    vendor = db.relationship("User", back_populates="listings")
+    tags = db.relationship("DietaryTag", secondary=listing_tags, order_by="DietaryTag.name")
+
+
+
+def ensure_dietary_tags():
+    # idempotent, so every restart is safe and a fresh volume always has the five tags
+    existing = set(db.session.scalars(db.select(DietaryTag.name)))
+    db.session.add_all(DietaryTag(name=n) for n in DIETARY_TAGS if n not in existing)
+    db.session.commit()
 
 
 @login_manager.user_loader

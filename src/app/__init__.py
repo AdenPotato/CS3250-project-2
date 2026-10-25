@@ -30,7 +30,7 @@ def create_app():
     login_manager.login_message_category = "error"
     csrf.init_app(app)
 
-    from . import models  # noqa: F401 - registers the tables before create_all
+    from . import models  # registers the tables before create_all
     from .routes import bp
     app.register_blueprint(bp)
 
@@ -42,5 +42,6 @@ def create_app():
     # the grader runs no SQL, so the schema creates itself on startup
     with app.app_context():
         db.create_all()
+        models.ensure_dietary_tags()
 
     return app
