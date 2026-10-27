@@ -1,6 +1,7 @@
+from datetime import datetime
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, RadioField, StringField, SubmitField
-from wtforms.validators import DataRequired, InputRequired, Length, ValidationError
+from wtforms import IntegerField, PasswordField, RadioField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
+from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, ValidationError
 
 from . import db
 from .models import Role, User
@@ -41,3 +42,45 @@ class LoginForm(FlaskForm):
     email = StringField("Email", filters=[_normalize_email], validators=[DataRequired("Enter your email.")])
     password = PasswordField("Password", validators=[DataRequired("Enter your password.")])
     submit = SubmitField("Log in")
+
+
+class ListingForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired("Enter a title."), Length(max=150)])
+    description = TextAreaField("Description", validators=[DataRequired("Enter a description.")])
+    portions = IntegerField(
+        "Portions Available",
+        validators=[
+            DataRequired("Enter number of portions."),
+            NumberRange(min=1, max=100, message="Portions must be between 1 and 100."),
+        ],
+    )
+    location = StringField("Pickup Location", validators=[DataRequired("Enter a pickup location.")])
+    dietary_tags = SelectMultipleField(
+        "Dietary Tags",
+        choices=[
+            ("vegetarian", "Vegetarian"),
+            ("vegan", "Vegan"),
+            ("gluten-free", "Gluten-Free"),
+            ("halal", "Halal"),
+            ("contains nuts", "Contains Nuts"),
+        ],
+        widget=widgets.ListWidget(prefix_label=False),
+        option_widget=widgets.CheckboxInput()
+    )
+    window_start = DateTimeLocalField(
+        "Pickup Window Start", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup start time.")]
+    )
+    window_end = DateTimeLocalField(
+        "Pickup Window End", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup end time.")]
+    )
+    submit = SubmitField("Post Listing")
+
+    def validate_window_start(self, field):
+        if field.data and field.data < datetime.now():
+            raise ValidationError("Pickup window start cannot be in the past.")
+
+    def validate_window_end(self, field):
+        if field.data and field.data < datetime.now():
+            raise ValidationError("Pickup window end cannot be in the past.")
+        if field.data and self.window_start.data and field.data <= self.window_start.data:
+            raise ValidationError("Pickup window end must be after the start time.")

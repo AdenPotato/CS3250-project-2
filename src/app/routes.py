@@ -5,8 +5,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import LoginForm, RegisterForm
-from .models import Role, User
+from .forms import ListingForm, LoginForm, RegisterForm
+from .models import DietaryTag, Listing, Role, User
 
 bp = Blueprint("main", __name__)
 
@@ -86,3 +86,36 @@ def student_home():
 @role_required(Role.VENDOR)
 def vendor_home():
     return render_template("vendor_home.html", title="Home")
+
+
+@bp.route("/listings/new", methods=["GET", "POST"])
+@role_required(Role.VENDOR)
+def new_listing():
+    form = ListingForm()
+    if form.validate_on_submit():
+        # Fetch the DietaryTag instances matching selected checkbox values
+        selected_tags = []
+        if form.dietary_tags.data:
+            selected_tags = list(
+                db.session.scalars(
+                    db.select(DietaryTag).where(DietaryTag.name.in_(form.dietary_tags.data))
+                )
+            )
+
+        listing = Listing(
+            vendor_id=current_user.id,
+            title=form.title.data.strip(),
+            description=form.description.data.strip(),
+            portions=form.portions.data,
+            portions_remaining=form.portions.data,  # Satisfies portions_remaining_range constraint
+            location=form.location.data.strip(),
+            pickup_start=form.window_start.data,
+            pickup_end=form.window_end.data,
+            tags=selected_tags,  # Matches the 'tags' relationship in models.py
+        )
+        db.session.add(listing)
+        db.session.commit()
+        flash("Surplus food listing posted successfully.", "success")
+        return redirect(url_for("main.vendor_home"))
+
+    return render_template("listings/new.html", title="New Listing", form=form)
