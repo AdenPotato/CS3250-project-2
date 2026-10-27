@@ -174,9 +174,13 @@ Justification (one or two sentences: team size, hours available, course load): <
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
 | --- | --- | --- | --- | --- |
 | Sprint 1 | US1 (5), US2 (5), US3 (3) | 13 | 32 | Y |
-| Sprint 2 |US4 (8), US7 (5), US6 (3)| 16 |16  | Y |
-| Sprint 3 | US5 (5), US8 (3), US9 (5), US10 (3) | 16 | 0 | Y |
+| Sprint 2 | US4 (8), US7 (5), US6 (3), US5 (5), US8 (3), US9 (5), US10 (3) | 32 | 0 | Y |
+| Sprint 3 | - (merged into Sprint 2 on 10/27/26) | 0 | 0 | - |
 | **Total** | All 7 Required + Optional US8, US9, US10 | 45 | — | — |
+
+Planned burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0.
+
+Re-plan on 10/27/26: Sprint 1 runs to 10/27/26 and Sprint 2 runs 10/28/26 to 11/08/26, taking every story planned for Sprints 2 and 3. Sprint 2 is twice as long as a one-week sprint, so its capacity is 32 points (16 per week).
 
 # Sprint Boards
 
