@@ -11,3 +11,7 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US1 | 3: empty field identified | Aden Lytle | 10/25/26 | passed | leave name, email, password, then role empty one at a time - expect the error under that field and no account |
 | US1 | 4: password stored hashed | Aden Lytle | 10/25/26 | passed | `docker compose exec db psql -U campuseats -d campuseats -c "SELECT email, password_hash FROM users"` - expect a scrypt hash, not the password |
 | US1 | 5: login lands on role home, wrong password rejected | Aden Lytle | 10/25/26 | passed | log in as the student and the vendor - expect each home page; a wrong password shows "Incorrect email or password." and stays logged out |
+
+| US2 | 2.1: Post surplus food listing saves to the database | Isabella Eaton | 10/27/26 | passed | verified via DB inspection and successful redirect with success flash message |
+| US2 | 2.2: Form validation enforces portions (1-100), future pickup windows, and multi-select dietary tags | Isabella Eaton | 10/27/26 | passed | WTForms SelectMultipleField checkboxes and SQLAlchemy/PostgreSQL CheckConstraints tested successfully |
+| US2 | 2.3: Vendor-only access enforced on /listings/new route | Isabella Eaton | 10/27/26 | passed | students attempting to access /listings/new receive a 403 Forbidden abort response |

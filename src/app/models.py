@@ -1,4 +1,3 @@
-# User, Listing, Reservation and DietaryTag land here - see uml/class.wsd.
 import enum
 from datetime import datetime, timezone
 
@@ -107,7 +106,6 @@ class Listing(db.Model):
 
     vendor = db.relationship("User", back_populates="listings")
     tags = db.relationship("DietaryTag", secondary=listing_tags, order_by="DietaryTag.name")
-
 
 
 def ensure_dietary_tags():
