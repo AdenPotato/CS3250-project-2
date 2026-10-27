@@ -1,8 +1,8 @@
-Date/Time: 
+Date/Time: 10/27/26
 
-Participants: 
+Participants: Aden Lytle (AdenPotato), Johnny De La Garza (jdelagar), Isabella Eaton (ellaevelynn), Elijah Damian-Ortiz (damian-ortiz-elijah), red-kaleena
 
-Goal Statement: <draft - confirm at planning> A student or vendor can register and log in, a vendor can post a surplus food listing, and a student can browse the listings currently available, all running in Docker Compose and released as v1.
+Goal Statement: Complete US1, US2 and US3 - every acceptance criterion passing in Docker Compose - and release v1.
 
 Stories: US1 (5), US2 (5), US3 (3) - 13 points, capacity 16.
 
@@ -29,12 +29,13 @@ Re-plan on 10/27/26: Sprint 1 ends 10/27/26. Every open Sprint 1 issue stays in 
 | #17 | US2: new listing form, validation and vendor-only route | US2 | ellaevelynn | done |
 | #18 | US2: new listing template | US2 | ellaevelynn | open |
 | #19 | US2: manual tests | US2 | ellaevelynn | open |
-| #20 | US3: browse available listings | US3 | **unassigned** | open |
-| #21 | US3: available listings query and route | US3 | **unassigned** | open |
+| #20 | US3: browse available listings | US3 | damian-ortiz-elijah | open |
+| #21 | US3: available listings query and route | US3 | damian-ortiz-elijah | open |
 | #22 | US3: listings page template with empty state | US3 | ellaevelynn | open |
-| #23 | US3: manual tests | US3 | **unassigned** | open |
+| #23 | US3: manual tests | US3 | red-kaleena | open |
 | #56 | Scrum: backlog scoring and release plan | scrum | ellaevelynn | done |
 | #57 | Scrum: Sprint 1 records | scrum | AdenPotato | open |
 | #58 | Deploy: release v1 - end of Sprint 1 | deployment | AdenPotato | open |
 | #70 | Tooling: remove the commit format check | tooling | AdenPotato | done |
-| #76 | US1: handle NUL bytes, CSRF failures and logged-in register | US1 | **unassigned** | open |
+| #76 | US1: handle NUL bytes, CSRF failures and logged-in register | US1 | AdenPotato | open |
+| #82 | Scrum: re-plan into two sprints and fill sprint planning records | scrum | AdenPotato | open |
