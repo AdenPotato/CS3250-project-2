@@ -45,8 +45,31 @@ note right of DietaryTag
   halal, contains nuts
 end note
 
+enum ReservationStatus {
+    ACTIVE
+    PICKED_UP
+    CANCELLED
+    NO_SHOW
+}
+
+class Reservation {
+    id : int
+    user_id : int <<FK users>>
+    listing_id : int <<FK listings>>
+    portions : int
+    pickup_code : str <<unique 6-char>>
+    status : ReservationStatus
+    created_at : datetime
+    updated_at : datetime
+    --
+    generate_pickup_code() : str
+}
+
 User --> Role
 User "1" -- "0..*" Listing : posts >
 Listing "0..*" -- "0..*" DietaryTag : tagged with >\n(listing_tags)
+User "1" -- "0..*" Reservation : makes >
+Listing "1" -- "0..*" Reservation : has >
+Reservation --> ReservationStatus
 
 @enduml

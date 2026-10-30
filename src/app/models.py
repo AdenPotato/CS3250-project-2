@@ -1,4 +1,6 @@
 import enum
+import secrets
+import string
 from datetime import datetime, timezone
 
 from flask_login import UserMixin
@@ -10,6 +12,13 @@ from . import db, login_manager
 class Role(enum.Enum):
     STUDENT = "student"
     VENDOR = "vendor"
+
+
+class ReservationStatus(enum.Enum):
+    ACTIVE = "active"
+    PICKED_UP = "picked up"
+    CANCELLED = "cancelled"
+    NO_SHOW = "no-show"
 
 
 class User(UserMixin, db.Model):
@@ -32,6 +41,7 @@ class User(UserMixin, db.Model):
 
     # a vendor's listings; students have none
     listings = db.relationship("Listing", back_populates="vendor", order_by="Listing.pickup_end")
+    reservations = db.relationship("Reservation", back_populates="student", order_by="Reservation.id")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -106,6 +116,46 @@ class Listing(db.Model):
 
     vendor = db.relationship("User", back_populates="listings")
     tags = db.relationship("DietaryTag", secondary=listing_tags, order_by="DietaryTag.name")
+    reservations = db.relationship("Reservation", back_populates="listing", order_by="Reservation.id")
+
+
+class Reservation(db.Model):
+    __tablename__ = "reservations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey("users.id"), nullable=False, index=True)
+    listing_id = db.Column(db.ForeignKey("listings.id"), nullable=False, index=True)
+    portions = db.Column(db.Integer, nullable=False)
+    pickup_code = db.Column(db.String(6), unique=True, nullable=False)
+    status = db.Column(
+        db.Enum(
+            ReservationStatus,
+            name="reservation_status",
+            values_callable=lambda r: [m.value for m in r],
+        ),
+        nullable=False,
+        default=ReservationStatus.ACTIVE,
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    student = db.relationship("User", back_populates="reservations")
+    listing = db.relationship("Listing", back_populates="reservations")
+
+    @staticmethod
+    def generate_pickup_code():
+        alphabet = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(alphabet) for _ in range(6))
+            if not db.session.scalar(db.select(Reservation).filter_by(pickup_code=code)):
+                return code
 
 
 def ensure_dietary_tags():
