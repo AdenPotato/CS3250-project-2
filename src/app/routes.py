@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from functools import wraps
 
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
@@ -5,8 +6,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import ListingForm, LoginForm, RegisterForm
-from .models import DietaryTag, Listing, Role, User
+from .forms import ListingForm, LoginForm, RegisterForm, ReserveForm
+from .models import DietaryTag, Listing, Reservation, ReservationStatus, Role, User
 
 bp = Blueprint("main", __name__)
 
@@ -119,3 +120,109 @@ def new_listing():
         return redirect(url_for("main.vendor_home"))
 
     return render_template("listings/new.html", title="New Listing", form=form)
+
+
+@bp.route("/listings")
+@role_required(Role.STUDENT)
+def listings():
+    now = datetime.now(timezone.utc)
+    listings = db.session.scalars(
+        db.select(Listing)
+        .where(Listing.cancelled.is_(False))
+        .where(Listing.pickup_end > now)
+        .where(Listing.portions_remaining > 0)
+        .order_by(Listing.pickup_end.asc())
+    ).all()
+    return render_template("listings/index.html", title="Available Listings", listings=listings)
+
+
+@bp.route("/listings/<int:listing_id>/reserve", methods=["GET", "POST"])
+@role_required(Role.STUDENT)
+def reserve_listing(listing_id):
+    listing = db.session.get(Listing, listing_id)
+    if not listing or listing.cancelled:
+        abort(404)
+    now = datetime.now(timezone.utc)
+    if listing.pickup_end <= now or listing.portions_remaining <= 0:
+        flash("This listing is no longer available.", "error")
+        return redirect(url_for("main.listings"))
+
+    # prevent double reservation for same listing
+    existing = db.session.scalar(
+        db.select(Reservation).where(
+            Reservation.user_id == current_user.id,
+            Reservation.listing_id == listing.id,
+            Reservation.status == ReservationStatus.ACTIVE,
+        )
+    )
+    if existing:
+        flash("You already have a reservation for this listing.", "error")
+        return redirect(url_for("main.listings"))
+
+    form = ReserveForm()
+    if form.validate_on_submit():
+        requested = int(form.portions.data)
+        if requested < 1 or requested > 2:
+            flash("You can reserve 1 or 2 portions.", "error")
+            return render_template("listings/reserve.html", title="Reserve", listing=listing, form=form)
+        if requested > listing.portions_remaining:
+            flash("Not enough portions remaining.", "error")
+            return render_template("listings/reserve.html", title="Reserve", listing=listing, form=form)
+
+        try:
+            listing.portions_remaining -= requested
+            reservation = Reservation(
+                user_id=current_user.id,
+                listing_id=listing.id,
+                portions=requested,
+                pickup_code=Reservation.generate_pickup_code(),
+                status=ReservationStatus.ACTIVE,
+            )
+            db.session.add(reservation)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("Not enough portions remaining.", "error")
+            return render_template("listings/reserve.html", title="Reserve", listing=listing, form=form)
+
+        flash(f"Reservation confirmed! Your pickup code: {reservation.pickup_code}", "success")
+        return redirect(url_for("main.listings"))
+
+    return render_template("listings/reserve.html", title="Reserve", listing=listing, form=form)
+
+@bp.route("/reservations")
+@role_required(Role.STUDENT)
+def my_reservations():
+    now = datetime.now(timezone.utc)
+    reservations = db.session.scalars(
+        db.select(Reservation)
+        .where(Reservation.user_id == current_user.id)
+        .order_by(Reservation.created_at.desc())
+    ).all()
+    return render_template("reservations/index.html", title="My Reservations", reservations=reservations, now=now)
+
+
+@bp.route("/reservations/<int:reservation_id>/cancel", methods=["POST"])
+@role_required(Role.STUDENT)
+def cancel_reservation(reservation_id):
+    reservation = db.session.get(Reservation, reservation_id)
+    if not reservation or reservation.user_id != current_user.id:
+        abort(404)
+    if reservation.status != ReservationStatus.ACTIVE:
+        flash("This reservation cannot be cancelled.", "error")
+        return redirect(url_for("main.my_reservations"))
+    listing = reservation.listing
+    now = datetime.now(timezone.utc)
+    if listing.pickup_end <= now:
+        flash("This reservation cannot be cancelled.", "error")
+        return redirect(url_for("main.my_reservations"))
+
+    try:
+        reservation.status = ReservationStatus.CANCELLED
+        listing.portions_remaining += reservation.portions
+        db.session.commit()
+        flash("Reservation cancelled. Portions returned.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Could not cancel reservation.", "error")
+    return redirect(url_for("main.my_reservations"))

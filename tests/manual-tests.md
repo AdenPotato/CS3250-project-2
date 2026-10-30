@@ -15,3 +15,16 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US2 | 2.1: Post surplus food listing saves to the database | Isabella Eaton | 10/27/26 | passed | verified via DB inspection and successful redirect with success flash message |
 | US2 | 2.2: Form validation enforces portions (1-100), future pickup windows, and multi-select dietary tags | Isabella Eaton | 10/27/26 | passed | WTForms SelectMultipleField checkboxes and SQLAlchemy/PostgreSQL CheckConstraints tested successfully |
 | US2 | 2.3: Vendor-only access enforced on /listings/new route | Isabella Eaton | 10/27/26 | passed | students attempting to access /listings/new receive a 403 Forbidden abort response |
+
+| US3 | 1: Browse available listings as student |  |  |  | logged in as student, open /listings - see listings with pickup window not ended, portions remaining > 0, not cancelled; sorted by pickup window end soonest first |
+| US3 | 2: Each listing shows required fields |  |  |  | title, vendor name, pickup location, dietary tags, portions remaining, pickup window displayed |
+| US3 | 3: Listings sorted by pickup window end |  |  |  | multiple listings appear in order of soonest pickup_end first |
+| US3 | 4: No listings message shown |  |  |  | when no available listings exist, message shown instead of empty page |
+
+| US4 | 1: Reserve 1 or 2 portions, get unique 6-char pickup code, portions decrease |  |  |  | logged in as student, reserve 1 or 2 portions from a listing with remaining portions - reservation stored, portions_remaining decreases, see unique 6-char pickup code |
+| US4 | 2: Request more than remain - no reservation, error shown |  |  |  | try to reserve more portions than remain - no reservation created, error message shown |
+| US4 | 3: Cannot reserve again if already have active reservation for listing |  |  |  | try to reserve again for same listing with active reservation - told already have reservation |
+| US4 | 4: Concurrent reservations - only one succeeds, portions never go below zero |  |  |  | two students reserve last portion simultaneously - only one reservation succeeds, remaining portions never go below zero |
+| US6 | 1: View my reservations with details and status |  |  |  | logged in as student, open "My Reservations" - see each reservation with listing title, vendor, location, pickup window, portions, pickup code, status |
+| US6 | 2: Cancel active reservation before window ends, portions returned |  |  |  | cancel active reservation with pickup window not ended - status becomes cancelled, portions returned to listing |
+| US6 | 3: No cancel option for non-active reservations |  |  |  | for non-active reservations (picked up/cancelled/no-show), no "Cancel" option shown |
