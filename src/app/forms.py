@@ -93,3 +93,8 @@ class ReserveForm(FlaskForm):
         validators=[InputRequired("Select how many portions to reserve.")],
     )
     submit = SubmitField("Reserve")
+
+
+class PickupCodeForm(FlaskForm):
+    pickup_code = StringField("Pickup Code", validators=[DataRequired("Enter the pickup code.")])
+    submit = SubmitField("Confirm Pickup")

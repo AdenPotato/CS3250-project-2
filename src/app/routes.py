@@ -6,7 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import ListingForm, LoginForm, RegisterForm, ReserveForm
+from .forms import ListingForm, LoginForm, RegisterForm, ReserveForm, PickupCodeForm
 from .models import DietaryTag, Listing, Reservation, ReservationStatus, Role, User
 
 bp = Blueprint("main", __name__)
@@ -226,3 +226,52 @@ def cancel_reservation(reservation_id):
         db.session.rollback()
         flash("Could not cancel reservation.", "error")
     return redirect(url_for("main.my_reservations"))
+
+
+@bp.route("/vendor/confirm-pickup", methods=["GET", "POST"])
+@role_required(Role.VENDOR)
+def confirm_pickup():
+    now = datetime.now(timezone.utc)
+    # mark expired active reservations on this vendor's listings as no-show
+    expired = db.session.scalars(
+        db.select(Reservation)
+        .join(Listing)
+        .where(Listing.vendor_id == current_user.id)
+        .where(Reservation.status == ReservationStatus.ACTIVE)
+        .where(Listing.pickup_end <= now)
+    ).all()
+    for r in expired:
+        r.status = ReservationStatus.NO_SHOW
+    if expired:
+        db.session.commit()
+
+    form = PickupCodeForm()
+    if form.validate_on_submit():
+        code = form.pickup_code.data.strip().upper()
+        reservation = db.session.scalar(db.select(Reservation).where(Reservation.pickup_code == code))
+        if not reservation:
+            flash("Invalid pickup code.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        listing = reservation.listing
+        if listing.vendor_id != current_user.id:
+            flash("This pickup code does not belong to one of your listings.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        if reservation.status != ReservationStatus.ACTIVE:
+            flash("This reservation has already been used or cancelled.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        if listing.pickup_end <= now:
+            reservation.status = ReservationStatus.NO_SHOW
+            db.session.commit()
+            flash("This reservation has expired and is marked as no-show.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        try:
+            reservation.status = ReservationStatus.PICKED_UP
+            db.session.commit()
+            flash(f"Pickup confirmed for {reservation.student.name} ({reservation.portions} portion(s)).", "success")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        except Exception:
+            db.session.rollback()
+            flash("Could not confirm pickup.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+
+    return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)

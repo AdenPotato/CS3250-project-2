@@ -28,3 +28,7 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US6 | 1: View my reservations with details and status |  |  |  | logged in as student, open "My Reservations" - see each reservation with listing title, vendor, location, pickup window, portions, pickup code, status |
 | US6 | 2: Cancel active reservation before window ends, portions returned |  |  |  | cancel active reservation with pickup window not ended - status becomes cancelled, portions returned to listing |
 | US6 | 3: No cancel option for non-active reservations |  |  |  | for non-active reservations (picked up/cancelled/no-show), no "Cancel" option shown |
+
+| US7 | 1: Confirm pickup with valid code during window marks as picked up |  |  |  | vendor enters pickup code for active reservation on their listing during pickup window - status becomes picked up, see student name and portions |
+| US7 | 2: Invalid code, wrong vendor, already used/cancelled rejected |  |  |  | code doesn't exist, belongs to another vendor, or already used/cancelled - pickup rejected with clear message |
+| US7 | 3: Expired window marks active reservations as no-show |  |  |  | pickup window ended - every reservation on that listing still active shown with status no-show |
