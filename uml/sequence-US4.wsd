@@ -1,0 +1,45 @@
+@startuml US4-Reserve-Portions
+title US4 - Reserve portions
+
+actor Student
+participant "Browser" as Browser
+participant "Flask (routes.reserve_listing)" as Route
+participant "ReserveForm" as Form
+participant "Listing (Model)" as Listing
+participant "Reservation (Model)" as Reservation
+database "PostgreSQL" as DB
+
+Student -> Browser: Open /listings and click "Reserve"
+Browser -> Route: GET /listings/<id>/reserve
+Route -> DB: Load Listing, check cancelled, pickup_end, portions_remaining
+Route --> Browser: Render reserve.html with ReserveForm
+
+Student -> Browser: Select 1 or 2 portions and submit
+Browser -> Route: POST /listings/<id>/reserve (with CSRF token)
+Route -> Form: validate_on_submit()
+alt invalid form data
+  Form --> Route: errors
+  Route --> Browser: Re-render form with errors
+else valid form
+  Route -> DB: Check for active Reservation for (student, listing)
+  alt already has active reservation
+    Route --> Browser: Redirect to /listings with flash "You already have a reservation for this listing."
+  else no existing reservation
+    Route -> DB: Check portions_remaining >= requested
+    alt not enough portions
+      Route --> Browser: Re-render form with flash "Not enough portions remaining."
+    else enough portions
+      Route -> Listing: portions_remaining -= requested
+      Route -> Reservation: create Reservation(user_id, listing_id, portions, pickup_code=generate_pickup_code(), status=ACTIVE)
+      Route -> DB: COMMIT transaction
+      alt commit succeeds
+        Route --> Browser: Redirect to /listings with flash showing unique 6-char pickup code
+      else constraint/integrity error
+        Route -> DB: ROLLBACK
+        Route --> Browser: Re-render form with flash "Not enough portions remaining."
+      end
+    end
+  end
+end
+
+@enduml
