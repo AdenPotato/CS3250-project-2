@@ -189,3 +189,40 @@ def reserve_listing(listing_id):
         return redirect(url_for("main.listings"))
 
     return render_template("listings/reserve.html", title="Reserve", listing=listing, form=form)
+
+@bp.route("/reservations")
+@role_required(Role.STUDENT)
+def my_reservations():
+    now = datetime.now(timezone.utc)
+    reservations = db.session.scalars(
+        db.select(Reservation)
+        .where(Reservation.user_id == current_user.id)
+        .order_by(Reservation.created_at.desc())
+    ).all()
+    return render_template("reservations/index.html", title="My Reservations", reservations=reservations, now=now)
+
+
+@bp.route("/reservations/<int:reservation_id>/cancel", methods=["POST"])
+@role_required(Role.STUDENT)
+def cancel_reservation(reservation_id):
+    reservation = db.session.get(Reservation, reservation_id)
+    if not reservation or reservation.user_id != current_user.id:
+        abort(404)
+    if reservation.status != ReservationStatus.ACTIVE:
+        flash("This reservation cannot be cancelled.", "error")
+        return redirect(url_for("main.my_reservations"))
+    listing = reservation.listing
+    now = datetime.now(timezone.utc)
+    if listing.pickup_end <= now:
+        flash("This reservation cannot be cancelled.", "error")
+        return redirect(url_for("main.my_reservations"))
+
+    try:
+        reservation.status = ReservationStatus.CANCELLED
+        listing.portions_remaining += reservation.portions
+        db.session.commit()
+        flash("Reservation cancelled. Portions returned.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Could not cancel reservation.", "error")
+    return redirect(url_for("main.my_reservations"))
