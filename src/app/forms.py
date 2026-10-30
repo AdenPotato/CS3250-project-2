@@ -84,3 +84,12 @@ class ListingForm(FlaskForm):
             raise ValidationError("Pickup window end cannot be in the past.")
         if field.data and self.window_start.data and field.data <= self.window_start.data:
             raise ValidationError("Pickup window end must be after the start time.")
+
+
+class ReserveForm(FlaskForm):
+    portions = RadioField(
+        "Portions",
+        choices=[("1", "1 portion"), ("2", "2 portions")],
+        validators=[InputRequired("Select how many portions to reserve.")],
+    )
+    submit = SubmitField("Reserve")
