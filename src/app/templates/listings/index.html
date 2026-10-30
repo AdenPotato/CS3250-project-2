@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Available Listings</h2>
+    <hr>
+    {% if listings %}
+        <div class="row">
+            {% for listing in listings %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ listing.title }}</h5>
+                        <p class="card-text text-muted">{{ listing.description }}</p>
+                        <p class="card-text">
+                            <strong>Vendor:</strong> {{ listing.vendor.name }}<br>
+                            <strong>Pickup Location:</strong> {{ listing.location }}<br>
+                            <strong>Portions Remaining:</strong> {{ listing.portions_remaining }}<br>
+                            <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+                        </p>
+                        {% if listing.tags %}
+                        <p class="card-text">
+                            <strong>Dietary Tags:</strong>
+                            {% for tag in listing.tags %}
+                                <span class="badge bg-secondary">{{ tag.name }}</span>
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.is_student and has_endpoint('main.reserve_listing') %}
+                            <a href="{{ url_for('main.reserve_listing', listing_id=listing.id) }}" class="btn btn-primary">Reserve</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No listings are available at this time.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
