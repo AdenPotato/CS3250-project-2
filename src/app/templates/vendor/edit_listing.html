@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>Edit Listing</h2>
+    <hr>
+    <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+            {% for error in form.title.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows="3") }}
+            {% for error in form.description.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.portions.label(class="form-label") }}
+            {{ form.portions(class="form-control", type="number", min="1", max="100") }}
+            {% for error in form.portions.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.location.label(class="form-label") }}
+            {{ form.location(class="form-control") }}
+            {% for error in form.location.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">{{ form.dietary_tags.label.text }}</label>
+            <div class="border rounded p-3 bg-light">
+                <div class="row">
+                    {% for subfield in form.dietary_tags %}
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check">
+                                {{ subfield(class="form-check-input") }}
+                                {{ subfield.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            {{ form.window_start.label(class="form-label") }}
+            {{ form.window_start(class="form-control") }}
+            {% for error in form.window_start.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.window_end.label(class="form-label") }}
+            {{ form.window_end(class="form-control") }}
+            {% for error in form.window_end.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {{ form.submit(class="btn btn-primary w-100") }}
+    </form>
+    <a href="{{ url_for('main.my_listings') }}" class="btn btn-link mt-2">Back to My Listings</a>
+</div>
+{% endblock %}

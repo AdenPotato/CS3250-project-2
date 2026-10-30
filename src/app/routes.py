@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import IntegrityError
 
@@ -86,6 +86,105 @@ def student_home():
 @role_required(Role.VENDOR)
 def vendor_home():
     return render_template("vendor_home.html", title="Home")
+
+
+@bp.route("/vendor/listings")
+@role_required(Role.VENDOR)
+def my_listings():
+    listings = db.session.scalars(
+        db.select(Listing).where(Listing.vendor_id == current_user.id).order_by(Listing.creation_date.desc())
+    ).all()
+    now = datetime.now(timezone.utc)
+    return render_template("vendor/my_listings.html", title="My Listings", listings=listings, now=now)
+
+
+@bp.route("/vendor/listings/<int:listing_id>/edit", methods=["GET", "POST"])
+@role_required(Role.VENDOR)
+def edit_listing(listing_id):
+    listing = db.session.get(Listing, listing_id)
+    if not listing or listing.vendor_id != current_user.id:
+        abort(404)
+    form = ListingForm(obj=listing)
+    if request.method == 'GET':
+        form.window_start.data = listing.pickup_start
+        form.window_end.data = listing.pickup_end
+        form.dietary_tags.data = [t.name for t in listing.tags]
+
+    if form.validate_on_submit():
+        reserved_total = db.session.scalar(
+            db.select(db.func.coalesce(db.func.sum(Reservation.portions), 0)).where(
+                Reservation.listing_id == listing.id,
+                Reservation.status == ReservationStatus.ACTIVE,
+            )
+        ) or 0
+
+        new_portions = form.portions.data
+        if new_portions < reserved_total:
+            flash("Cannot set portions below the number already reserved.", "error")
+            return render_template("vendor/edit_listing.html", title="Edit Listing", form=form, listing=listing)
+
+        selected_tags = []
+        if form.dietary_tags.data:
+            selected_tags = list(
+                db.session.scalars(
+                    db.select(DietaryTag).where(DietaryTag.name.in_(form.dietary_tags.data))
+                )
+            )
+
+        try:
+            listing.title = form.title.data.strip()
+            listing.description = form.description.data.strip()
+            listing.portions = new_portions
+            listing.portions_remaining = new_portions - reserved_total
+            listing.location = form.location.data.strip()
+            listing.pickup_start = form.window_start.data
+            listing.pickup_end = form.window_end.data
+            listing.tags = selected_tags
+            db.session.commit()
+            flash("Listing updated.", "success")
+            return redirect(url_for("main.my_listings"))
+        except Exception:
+            db.session.rollback()
+            flash("Could not update listing.", "error")
+            return render_template("vendor/edit_listing.html", title="Edit Listing", form=form, listing=listing)
+
+    return render_template("vendor/edit_listing.html", title="Edit Listing", form=form, listing=listing)
+
+
+@bp.route("/vendor/listings/<int:listing_id>/cancel", methods=["POST"])
+@role_required(Role.VENDOR)
+def cancel_listing(listing_id):
+    listing = db.session.get(Listing, listing_id)
+    if not listing or listing.vendor_id != current_user.id:
+        abort(404)
+    try:
+        listing.cancelled = True
+        active_reservations = db.session.scalars(
+            db.select(Reservation).where(
+                Reservation.listing_id == listing.id,
+                Reservation.status == ReservationStatus.ACTIVE,
+            )
+        ).all()
+        for r in active_reservations:
+            r.status = ReservationStatus.CANCELLED
+        db.session.commit()
+        flash("Listing cancelled. Active reservations cancelled.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Could not cancel listing.", "error")
+    return redirect(url_for("main.my_listings"))
+
+
+@bp.route("/vendor/listings/<int:listing_id>")
+@role_required(Role.VENDOR)
+def view_listing_reservations(listing_id):
+    listing = db.session.get(Listing, listing_id)
+    if not listing or listing.vendor_id != current_user.id:
+        abort(404)
+    reservations = db.session.scalars(
+        db.select(Reservation).where(Reservation.listing_id == listing.id).order_by(Reservation.created_at.desc())
+    ).all()
+    return render_template("vendor/listing_detail.html", title="Listing Details", listing=listing, reservations=reservations)
 
 
 @bp.route("/listings/new", methods=["GET", "POST"])
