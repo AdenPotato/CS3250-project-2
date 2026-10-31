@@ -9,39 +9,39 @@
         
         <div class="mb-3">
             {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control") }}
+            {{ form.title(class="form-control " ~ ("is-invalid" if form.title.errors else "")) }}
             {% for error in form.title.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
         <div class="mb-3">
             {{ form.description.label(class="form-label") }}
-            {{ form.description(class="form-control", rows="3") }}
+            {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="3") }}
             {% for error in form.description.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
         <div class="mb-3">
             {{ form.portions.label(class="form-label") }}
-            {{ form.portions(class="form-control", type="number", min="1", max="100") }}
+            {{ form.portions(class="form-control " ~ ("is-invalid" if form.portions.errors else ""), type="number", min="1", max="100") }}
             {% for error in form.portions.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
-            {% endfor %}
+                <div class="invalid-feedback">{{ error }}</div>
+            <% endfor %}
         </div>
 
         <div class="mb-3">
             {{ form.location.label(class="form-label") }}
-            {{ form.location(class="form-control") }}
+            {{ form.location(class="form-control " ~ ("is-invalid" if form.location.errors else "")) }}
             {% for error in form.location.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
         <div class="mb-3">
             <label class="form-label">{{ form.dietary_tags.label.text }}</label>
-            <div class="border rounded p-3 bg-light">
+            <div class="border rounded p-3 bg-light {% if form.dietary_tags.errors %}border-danger{% endif %}">
                 <div class="row">
                     {% for subfield in form.dietary_tags %}
                         <div class="col-md-6 mb-2">
@@ -60,17 +60,17 @@
 
         <div class="mb-3">
             {{ form.window_start.label(class="form-label") }}
-            {{ form.window_start(class="form-control") }}
+            {{ form.window_start(class="form-control " ~ ("is-invalid" if form.window_start.errors else "")) }}
             {% for error in form.window_start.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
         <div class="mb-3">
             {{ form.window_end.label(class="form-label") }}
-            {{ form.window_end(class="form-control") }}
+            {{ form.window_end(class="form-control " ~ ("is-invalid" if form.window_end.errors else "")) }}
             {% for error in form.window_end.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
