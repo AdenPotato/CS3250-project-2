@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4" style="max-width: 600px;">
+<div class="container mt-4 mb-5" style="max-width: 600px;">
     <h2>Post a Surplus Food Listing</h2>
     <hr>
     <form method="POST" novalidate>
@@ -28,7 +28,7 @@
             {{ form.portions(class="form-control " ~ ("is-invalid" if form.portions.errors else ""), type="number", min="1", max="100") }}
             {% for error in form.portions.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
-            <% endfor %}
+            {% endfor %}
         </div>
 
         <div class="mb-3">
