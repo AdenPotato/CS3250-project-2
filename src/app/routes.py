@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from functools import wraps
 
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
@@ -119,3 +120,17 @@ def new_listing():
         return redirect(url_for("main.vendor_home"))
 
     return render_template("listings/new.html", title="New Listing", form=form)
+
+
+@bp.route("/listings")
+@role_required(Role.STUDENT)
+def listings():
+    now = datetime.now(timezone.utc)
+    listings = db.session.scalars(
+        db.select(Listing)
+        .where(Listing.cancelled.is_(False))
+        .where(Listing.pickup_end > now)
+        .where(Listing.portions_remaining > 0)
+        .order_by(Listing.pickup_end.asc())
+    ).all()
+    return render_template("listings/index.html", title="Available Listings", listings=listings)
