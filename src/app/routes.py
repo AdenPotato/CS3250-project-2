@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from . import db
 from .forms import LoginForm, RegisterForm
-from .models import Role, User
+from .models import Role, User, Reservation, Listing
 
 bp = Blueprint("main", __name__)
 
@@ -86,3 +86,56 @@ def student_home():
 @role_required(Role.VENDOR)
 def vendor_home():
     return render_template("vendor_home.html", title="Home")
+@bp.route("/listings/<int:id>/reserve", methods=["POST"])
+@role_required(Role.STUDENT)
+def reserve_listing(id):
+    # 1. Parse and validate requested portions (AC 4.1: Reserve 1 or 2 portions)
+    try:
+        portions_requested = int(request.form.get("portions", 1))
+    except (TypeError, ValueError):
+        flash("Invalid portion quantity.", "danger")
+        return redirect(url_for("main.student_home"))
+
+    if portions_requested not in (1, 2):
+        flash("You can only reserve 1 or 2 portions at a time.", "danger")
+        return redirect(url_for("main.student_home"))
+
+    # 2. Reject a second active reservation for this user (AC 4.3)
+    existing_active = db.session.scalar(
+        db.select(Reservation).filter_by(user_id=current_user.id, status="active")
+    )
+    if existing_active:
+        flash("You already have an active reservation.", "warning")
+        return redirect(url_for("main.student_home"))
+
+    # 3. Lock the listing row using SELECT ... FOR UPDATE (AC 4.4)
+    listing = db.session.query(Listing).filter_by(id=id).with_for_update().first()
+
+    if not listing or listing.cancelled:
+        flash("Listing not found or no longer available.", "danger")
+        return redirect(url_for("main.student_home"))
+
+    # 4. Reject if requested portions exceed remaining portions (AC 4.2)
+    if portions_requested > listing.portions_remaining:
+        flash(f"Cannot reserve {portions_requested} portions. Only {listing.portions_remaining} remaining.", "danger")
+        return redirect(url_for("main.student_home"))
+
+    # 5. Deduct portions and create active reservation (AC 4.1)
+    listing.portions_remaining -= portions_requested
+    reservation = Reservation(
+        user_id=current_user.id,
+        listing_id=listing.id,
+        portions_reserved=portions_requested,
+        status="active"
+    )
+
+    db.session.add(reservation)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("An error occurred while processing your reservation. Please try again.", "danger")
+        return redirect(url_for("main.student_home"))
+
+    flash(f"Successfully reserved {portions_requested} portion(s)!", "success")
+    return redirect(url_for("main.student_home"))

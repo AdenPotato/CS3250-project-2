@@ -108,7 +108,24 @@ class Listing(db.Model):
     vendor = db.relationship("User", back_populates="listings")
     tags = db.relationship("DietaryTag", secondary=listing_tags, order_by="DietaryTag.name")
 
+class Reservation(db.Model):
+    __tablename__ = "reservations"
 
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey("users.id"), nullable=False, index=True)
+    listing_id = db.Column(db.ForeignKey("listings.id"), nullable=False, index=True)
+    portions_reserved = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="active")  # 'active', 'completed', 'cancelled'
+    creation_date = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    user = db.relationship("User", backref=db.backref("reservations", lazy=True))
+    listing = db.relationship("Listing", backref=db.backref("reservations", lazy=True))
+
+    __table_args__ = (
+        db.CheckConstraint("portions_reserved BETWEEN 1 AND 2", name="portions_reserved_range"),
+    )
 
 def ensure_dietary_tags():
     # idempotent, so every restart is safe and a fresh volume always has the five tags
