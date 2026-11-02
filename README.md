@@ -1,3 +1,40 @@
+# Running CampusEats
+
+From the repository root:
+
+```
+docker compose up --build
+```
+
+Then open http://localhost:5000. No `.env` is needed - Compose falls back to development defaults. To set your own database password and secret key, copy `.env.example` to `.env` and edit it first.
+
+`docker compose down` stops the app and keeps the data; `docker compose down -v` also wipes the database.
+
+## Seed accounts
+
+`src/seed.py` runs every time the `web` container starts and creates these accounts, plus five sample listings, on a fresh database. It skips whatever already exists, so a restart never duplicates anything. Every seed account uses the password `campuseats123`.
+
+| Role | Name | Email |
+| --- | --- | --- |
+| Vendor | Campus Deli | `vendor@campuseats.test` |
+| Vendor | Union Bakery | `bakery@campuseats.test` |
+| Student | Sam Student | `student@campuseats.test` |
+| Student | Riley Student | `student2@campuseats.test` |
+
+Campus Deli posts three listings and Union Bakery posts two, with dietary tags. Their pickup windows are set relative to the first start (open now, or within the next two hours, and ending 4 to 72 hours later), so after a few days they expire. To get fresh ones, run `docker compose down -v` and then `docker compose up --build`. To re-run the seed against a running stack, use `docker compose exec web python seed.py`.
+
+## Running the tests
+
+The tests are black box: they talk to the running Compose app over HTTP, so start it first.
+
+```
+docker compose up --build -d
+pip install pytest
+pytest tests
+```
+
+They expect the app at http://localhost:5000. To test another address, set `CAMPUSEATS_URL`, e.g. `CAMPUSEATS_URL=http://localhost:8000 pytest tests`. The database checks run `docker compose exec db psql`, so run them from the repository root; they are skipped if Docker is not available.
+
 # Overview
 
 In this project your Scrum team will build **CampusEats**, a web app for rescuing surplus food on campus, over three one-week sprints. Before Sprint 1 starts, your team scores and prioritizes the Product Backlog and plans which user stories go into which sprint. During the sprints you run Scrum events, track work on a Kanban board, use Git and GitHub with one tagged release per sprint, and deploy the app with Docker Compose and PostgreSQL.
@@ -11,7 +48,7 @@ Each team designates one member as the **Scrum Master** before Sprint 1 begins a
 The Product Owner role is played by the instructor. The instructor has written the backlog and set the user value of each story; your team decides effort, priority within the rules below, and how the work is split.
 
 ```
-Scrum Master: <student's name>
+Scrum Master: Aden Lytle
 ```
 
 # Project Vision
@@ -113,17 +150,17 @@ Before Sprint 1 starts, your team estimates every story and ranks the backlog us
 
 | ID | Short name | User value | Story points | Priority score | Rank |
 | --- | --- | --- | --- | --- | --- |
-| US1 | Register and log in | 3 |  |  |  |
-| US2 | Post a listing | 3 |  |  |  |
-| US3 | Browse listings | 3 |  |  |  |
-| US4 | Reserve portions | 3 |  |  |  |
-| US5 | Manage listings | 2 |  |  |  |
-| US6 | My reservations | 2 |  |  |  |
-| US7 | Confirm pickup | 3 |  |  |  |
-| US8 | Filter listings | 2 |  |  |  |
-| US9 | Impact dashboard | 1 |  |  |  |
-| US10 | Rate a pickup | 1 |  |  |  |
-| **Total** |  |  |  |  |  |
+| US1 | Register and log in | 3 | 5 |.60  | 1 |
+| US2 | Post a listing | 3 | 5 | .60 | 2 |
+| US3 | Browse listings | 3 | 3 | 1.00 | 3 |
+| US4 | Reserve portions | 3 | 8 | .38 | 4 |
+| US5 | Manage listings | 2 | 5 | .40 | 5 |
+| US6 | My reservations | 2 | 3 | .67 | 6 |
+| US7 | Confirm pickup | 3 | 5 |.60  | 7 |
+| US8 | Filter listings | 2 | 3 | .67 | 8 |
+| US9 | Impact dashboard | 1 | 5 | .20 |9  |
+| US10 | Rate a pickup | 1 | 3 | .33 | 10 |
+| **Total** |  -| 23 | 45 | - | - |
 
 Priority Score Formula: 
 
@@ -142,17 +179,21 @@ Before writing any code, split the backlog across the three sprints and record i
 * Planned burndown: list the story points remaining at the start and after each planned sprint.
 
 ```
-Team capacity (story points per sprint): <your team's capacity>
+Team capacity (story points per sprint): <16 story points>
 
-Justification (one or two sentences: team size, hours available, course load): <justification>
+Justification (one or two sentences: team size, hours available, course load): <With 5 team members balancing rigorous coursework and part-time responsibilities, each student contributes approximately 8 hours per week, establishing a reliable and sustainable team capacity of 16 story points per sprint.>
 ```
 
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
 | --- | --- | --- | --- | --- |
-| Sprint 1 |  |  |  |  |
-| Sprint 2 |  |  |  |  |
-| Sprint 3 |  |  |  |  |
-| **Total** |  |  | — | — |
+| Sprint 1 | US1 (5), US2 (5), US3 (3) | 13 | 32 | Y |
+| Sprint 2 | US4 (8), US7 (5), US6 (3), US5 (5), US8 (3), US9 (5), US10 (3) | 32 | 0 | Y |
+| Sprint 3 | - (merged into Sprint 2 on 10/27/26) | 0 | 0 | - |
+| **Total** | All 7 Required + Optional US8, US9, US10 | 45 | — | — |
+
+Planned burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0.
+
+Re-plan on 10/27/26: Sprint 1 runs to 10/27/26 and Sprint 2 runs 10/28/26 to 11/08/26, taking every story planned for Sprints 2 and 3. Sprint 2 is twice as long as a one-week sprint, so its capacity is 32 points (16 per week).
 
 # Sprint Boards
 

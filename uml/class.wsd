@@ -1,12 +1,83 @@
 @startuml class
 
-class User {
-    email
-    name
-    creation_date
-    role
-    password
-    active
+enum Role {
+    STUDENT
+    VENDOR
 }
+
+note right of Role
+  role is an attribute on User, not a subclass:
+  a vendor is a User with role VENDOR
+end note
+
+class User {
+    id : int <<PK>>
+    name : str
+    email : str <<unique>>
+    password_hash : str
+    role : Role
+    active : bool
+    creation_date : datetime
+    --
+    set_password(password)
+    check_password(password) : bool
+    is_active : bool
+    is_vendor : bool
+    is_student : bool
+}
+
+class Listing {
+    id : int <<PK>>
+    vendor_id : int <<FK users>>
+    title : str
+    description : str
+    portions : int <<1..100>>
+    portions_remaining : int <<0..portions>>
+    location : str
+    pickup_start : datetime
+    pickup_end : datetime <<after pickup_start>>
+    cancelled : bool
+    creation_date : datetime
+}
+
+class DietaryTag {
+    id : int <<PK>>
+    name : str <<unique>>
+}
+
+note right of DietaryTag
+  fixed set, created on startup:
+  vegetarian, vegan, gluten-free,
+  halal, contains nuts
+  join table listing_tags(listing_id, tag_id):
+  composite PK, both columns FK
+end note
+
+enum ReservationStatus {
+    ACTIVE
+    PICKED_UP
+    CANCELLED
+    NO_SHOW
+}
+
+class Reservation {
+    id : int <<PK>>
+    user_id : int <<FK users>>
+    listing_id : int <<FK listings>>
+    portions : int
+    pickup_code : str <<unique 6-char>>
+    status : ReservationStatus
+    created_at : datetime
+    updated_at : datetime
+    --
+    generate_pickup_code() : str
+}
+
+User "0..*" --> "1" Role
+User "1" -- "0..*" Listing : posts >
+Listing "0..*" -- "0..*" DietaryTag : tagged with >\n(listing_tags)
+User "1" -- "0..*" Reservation : makes >
+Listing "1" -- "0..*" Reservation : has >
+Reservation "0..*" --> "1" ReservationStatus
 
 @enduml

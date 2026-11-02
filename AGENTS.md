@@ -11,14 +11,16 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 | Path | What |
 |---|---|
 | [README.md](README.md) | The assignment: backlog, acceptance criteria, sprint rules, rubric. **The source of truth.** Also holds the backlog scoring table, the release plan and the Scrum Master. |
-| `src/app/` | The application package: `__init__.py`, `models.py`, `routes.py`, `forms.py`, `templates/`, `static/`. Planned layout - update this row when the code lands. |
+| `src/app/` | The application package: `__init__.py` (the `create_app` factory, `db`, `login_manager`, `csrf`), `models.py`, `routes.py` (the `main` blueprint), `templates/` (`base.html` and pages), `static/`. `forms.py` arrives with the first form. Run from `src/` with `flask --app app run`. |
+| `requirements.txt` | Pinned direct dependencies. The PostgreSQL driver is psycopg 3, the SQLAlchemy 2.1 default for `postgresql://` URLs. |
 | `src/seed.py` | Seed accounts and sample listings, created automatically on first start. Planned. |
 | `uml/class.wsd` | Domain model: User, role, Listing, Reservation, DietaryTag. |
 | `uml/sequence-US#.wsd` | One story's full flow, browser to PostgreSQL, with an alternative path. |
 | `scrum/sprint_#/` | `planning.md`, `daily_scrums.md`, `review.md`, `retrospective.md`, `board.png`. |
 | `tests/` | The Selenium test and `manual-tests.md`. |
 | `Dockerfile`, `docker-compose.yml` | `db` (postgres + named volume) and `web` (waits for `db`). |
-| `.env.example` | Placeholder values for `DATABASE_URL` and `SECRET_KEY`. `.env` itself is never committed. |
+| `.github/workflows/build-and-test.yml` | The `build-and-test` check on PRs into `dev`: compiles `src/`, builds and starts the Compose stack, runs `pytest tests`. |
+| `.env.example` | Placeholder values for `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` and `SECRET_KEY`; Compose builds `DATABASE_URL` from them. `.env` itself is never committed. |
 | `burndown.xlsx` | Ideal, planned and actual lines, filled at the end. |
 | `.agents/skills/` | Workflow skills, one `SKILL.md` per folder. |
 | `.agents/agents/` | Role briefs: `app`, `ui`, `release`, `scrum`. |
@@ -40,13 +42,14 @@ This file is the entry point for every AI coding agent (Codex, Gemini, Cursor, C
 
 | Branch | Rule |
 |---|---|
-| `main` | Reached only by merging `dev` at sprint end. The merge commit is tagged `v1`/`v2`/`v3`. |
-| `dev` | Integration. Created from `main` at the start. Everything lands here through a reviewed PR. |
-| `US#-short-slug` | One task or story, off `dev`, e.g. `US4-reserve-portions`. Deleted after merge. |
+| `main` | Releases only. Reached by a PR from `dev` at sprint end, merged with **"Create a merge commit"** (the only method the `Protect main` ruleset allows). The merge commit is tagged `v1`/`v2`/`v3`. |
+| `dev` | The default branch and integration. Everything lands here through a reviewed PR merged with **"Squash and merge"** (the only method the `Protect dev` ruleset allows). |
+| `<issue#>-short-slug` | One task, off `dev`, named with its GitHub issue number, e.g. `25-reservation-model` for issue #25. Deleted automatically after merge. |
 
-- PRs into `dev` are reviewed and approved by a teammate **other than the author**. `dev`'s history must show merges from every team member - spread the work so it does.
+- PRs into `dev` are reviewed and approved by a teammate **other than the author** (enforced: 1 approval). `dev`'s history must show work from every team member - spread the work so it does.
 - Each PR links the GitHub issue it closes (`Closes #12`).
-- Commits: one logical change, present tense, lowercase, no trailing period, issue referenced: `add reservation model with pickup code (#12)`.
+- Commits and PR titles: `CS-<issue number> <message>` - one logical change, present tense, lowercase, no trailing period: `CS-12 add reservation model with pickup code`. The squash commit on `dev` takes the PR title, so the title matters most.
+- The `build-and-test` check must pass before a PR into `dev` merges. It needs `.env.example` to hold values Compose can start with, since CI copies it to `.env`.
 - Never rewrite pushed history.
 
 ## Skills
@@ -88,7 +91,7 @@ Claude Code enforces these through `.claude/settings.json`. Other tools must fol
 From the repo root:
 
 ```bash
-cp .env.example .env              # once, then fill in real values
+cp .env.example .env              # optional - compose has dev defaults without it
 docker compose up --build         # http://localhost:5000
 docker compose down               # stop, keep the data
 docker compose down -v            # stop and wipe the database volume - after a model change
