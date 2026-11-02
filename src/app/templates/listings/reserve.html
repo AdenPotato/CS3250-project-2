@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>Reserve {{ listing.title }}</h2>
+    <p class="text-muted">{{ listing.description }}</p>
+    <p>
+        <strong>Vendor:</strong> {{ listing.vendor.name }}<br>
+        <strong>Pickup Location:</strong> {{ listing.location }}<br>
+        <strong>Portions Remaining:</strong> {{ listing.portions_remaining }}<br>
+        <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+    </p>
+    {% if listing.tags %}
+    <p>
+        <strong>Dietary Tags:</strong>
+        {% for tag in listing.tags %}
+            <span class="badge bg-secondary">{{ tag.name }}</span>
+        {% endfor %}
+    </p>
+    {% endif %}
+    <hr>
+    <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.portions.label(class="form-label") }}
+            {% for subfield in form.portions %}
+                <div class="form-check">
+                    {{ subfield(class="form-check-input") }}
+                    {{ subfield.label(class="form-check-label") }}
+                </div>
+            {% endfor %}
+            {% for error in form.portions.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {{ form.submit(class="btn btn-primary w-100") }}
+    </form>
+    <a href="{{ url_for('main.listings') }}" class="btn btn-link mt-2">Back to listings</a>
+</div>
+{% endblock %}
