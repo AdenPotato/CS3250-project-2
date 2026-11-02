@@ -1,7 +1,8 @@
 from functools import wraps
 
-from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import IntegrityError
 
 from . import db
@@ -28,6 +29,16 @@ def _home_for(user):
     return url_for("main.vendor_home" if user.is_vendor else "main.student_home")
 
 
+@bp.app_errorhandler(CSRFError)
+def csrf_failed(error):
+    # CSRFProtect rejects the POST before the view runs. Running the view now is safe: its
+    # form fails the same token check, so it only re-renders with a fresh token, or redirects
+    if request.endpoint not in ("main.register", "main.login"):
+        return error
+    flash("Your session expired - please try again.", "error")
+    return current_app.view_functions[request.endpoint]()
+
+
 @bp.route("/")
 def index():
     if current_user.is_authenticated:
@@ -37,6 +48,8 @@ def index():
 
 @bp.route("/register", methods=["GET", "POST"])
 def register():
+    if current_user.is_authenticated:
+        return redirect(_home_for(current_user))
     form = RegisterForm()
     if form.validate_on_submit():
         user = User(name=form.name.data.strip(), email=form.email.data, role=Role(form.role.data))
