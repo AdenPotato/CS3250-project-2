@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ listing.title }}</h2>
+    <p class="text-muted">{{ listing.description }}</p>
+    <p>
+        <strong>Location:</strong> {{ listing.location }}<br>
+        <strong>Portions:</strong> {{ listing.portions }} (remaining: {{ listing.portions_remaining }})<br>
+        <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+    </p>
+    <hr>
+    <h4>Reservations</h4>
+    {% if reservations %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Portions</th>
+                        <th>Pickup Code</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                    <tr>
+                        <td>{{ r.student.name }}</td>
+                        <td>{{ r.portions }}</td>
+                        <td>{{ r.pickup_code }}</td>
+                        <td>{{ r.status.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">No reservations yet.</div>
+    {% endif %}
+    <a href="{{ url_for('main.my_listings') }}" class="btn btn-link">Back to My Listings</a>
+</div>
+{% endblock %}

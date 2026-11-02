@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Listings</h2>
+    <hr>
+    {% if listings %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Portions (reserved/remaining/total)</th>
+                        <th>Pickup Window</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for listing in listings %}
+                    <tr>
+                        <td><a href="{{ url_for('main.view_listing_reservations', listing_id=listing.id) }}">{{ listing.title }}</a></td>
+                        <td>
+                            {% if listing.cancelled %}
+                                cancelled
+                            {% elif listing.pickup_end <= now %}
+                                ended
+                            {% else %}
+                                active
+                            {% endif %}
+                        </td>
+                        <td>{{ (listing.portions - listing.portions_remaining) }} / {{ listing.portions_remaining }} / {{ listing.portions }}</td>
+                        <td>{{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                        <td>
+                            {% if not listing.cancelled and listing.pickup_end > now %}
+                                <a href="{{ url_for('main.edit_listing', listing_id=listing.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                <form method="POST" action="{{ url_for('main.cancel_listing', listing_id=listing.id) }}" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You have no listings.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -15,3 +15,8 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US2 | 2.1: Post surplus food listing saves to the database | Isabella Eaton | 10/27/26 | passed | verified via DB inspection and successful redirect with success flash message |
 | US2 | 2.2: Form validation enforces portions (1-100), future pickup windows, and multi-select dietary tags | Isabella Eaton | 10/27/26 | passed | WTForms SelectMultipleField checkboxes and SQLAlchemy/PostgreSQL CheckConstraints tested successfully |
 | US2 | 2.3: Vendor-only access enforced on /listings/new route | Isabella Eaton | 10/27/26 | passed | students attempting to access /listings/new receive a 403 Forbidden abort response |
+| US5 | 1: Vendor sees all listings with status and counts |  |  |  | vendor opens "My Listings" - sees all their listings with status (active/ended/cancelled) and portions reserved/remaining |
+| US5 | 2: Edit listing with no reservations allowed if valid |  |  |  | edit listing with no reservations, save valid changes - changes stored |
+| US5 | 3: Cannot reduce portions below reserved |  |  |  | listing has reservations, try to set portions below reserved - error, not allowed |
+| US5 | 4: Cancel listing cancels all active reservations and hides from students |  |  |  | cancel listing - no longer appears to students, all active reservations marked cancelled |
+| US5 | 5: View listing shows reservers, cannot see other vendors' listings |  |  |  | open a listing - see name and portions of every student who reserved it; vendors cannot access others' listings |
