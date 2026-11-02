@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>Confirm Pickup</h2>
+    <hr>
+    <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.pickup_code.label(class="form-label") }}
+            {{ form.pickup_code(class="form-control", placeholder="Enter 6-character code") }}
+            {% for error in form.pickup_code.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {{ form.submit(class="btn btn-primary w-100") }}
+    </form>
+</div>
+{% endblock %}
