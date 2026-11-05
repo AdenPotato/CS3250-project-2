@@ -164,16 +164,16 @@ def my_reservations():
 @bp.route("/reservations/<int:reservation_id>/cancel", methods=["POST"])
 @role_required(Role.STUDENT)
 def cancel_reservation(reservation_id):
-    now = datetime.now(timezone.utc)
+    reservation = db.session.execute(
+        db.select(Reservation)
+        .where(Reservation.id == reservation_id)
+        .where(Reservation.user_id == current_user.id)
+        .with_for_update()
+    ).scalar_one_or_none()
+    if not reservation:
+        abort(404)
+
     try:
-        reservation = db.session.execute(
-            db.select(Reservation)
-            .where(Reservation.id == reservation_id)
-            .where(Reservation.user_id == current_user.id)
-            .with_for_update()
-        ).scalar_one_or_none()
-        if not reservation:
-            abort(404)
         if reservation.status != ReservationStatus.ACTIVE:
             db.session.rollback()
             flash("This reservation cannot be cancelled.", "error")
@@ -181,6 +181,7 @@ def cancel_reservation(reservation_id):
         listing = db.session.execute(
             db.select(Listing).where(Listing.id == reservation.listing_id).with_for_update()
         ).scalar_one_or_none()
+        now = datetime.now(timezone.utc)
         if not listing or listing.pickup_end <= now or listing.cancelled:
             db.session.rollback()
             flash("This reservation cannot be cancelled.", "error")
