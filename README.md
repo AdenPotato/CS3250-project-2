@@ -10,6 +10,19 @@ Then open http://localhost:5000. No `.env` is needed - Compose falls back to dev
 
 `docker compose down` stops the app and keeps the data; `docker compose down -v` also wipes the database.
 
+## Seed accounts
+
+`src/seed.py` runs every time the `web` container starts and creates these accounts, plus five sample listings, on a fresh database. It skips whatever already exists, so a restart never duplicates anything. Every seed account uses the password `campuseats123`.
+
+| Role | Name | Email |
+| --- | --- | --- |
+| Vendor | Campus Deli | `vendor@campuseats.test` |
+| Vendor | Union Bakery | `bakery@campuseats.test` |
+| Student | Sam Student | `student@campuseats.test` |
+| Student | Riley Student | `student2@campuseats.test` |
+
+Campus Deli posts three listings and Union Bakery posts two, with dietary tags. Their pickup windows are set relative to the first start (open now, or within the next two hours, and ending 4 to 72 hours later), so after a few days they expire. To get fresh ones, run `docker compose down -v` and then `docker compose up --build`. To re-run the seed against a running stack, use `docker compose exec web python seed.py`.
+
 ## Running the tests
 
 The tests are black box: they talk to the running Compose app over HTTP, so start it first.

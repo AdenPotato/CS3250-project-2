@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, PasswordField, RadioField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
-from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, ValidationError
+from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, StopValidation, ValidationError
 
 from . import db
 from .models import Role, User
@@ -12,16 +12,24 @@ def _normalize_email(value):
     return value.strip().lower() if value else value
 
 
+def _no_nul(form, field):
+    # postgres text cannot hold a NUL, so psycopg would raise and the page would be a 500.
+    # StopValidation, not ValidationError, so validate_email never queries with this value
+    if field.data and "\x00" in field.data:
+        raise StopValidation("This field contains an invalid character.")
+
+
 class RegisterForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired("Enter your name."), Length(max=100)])
+    name = StringField("Name", validators=[_no_nul, DataRequired("Enter your name."), Length(max=100)])
     email = StringField(
         "Email",
         filters=[_normalize_email],
-        validators=[DataRequired("Enter your email."), Length(max=255)],
+        validators=[_no_nul, DataRequired("Enter your email."), Length(max=255)],
     )
     password = PasswordField(
         "Password",
         validators=[
+            _no_nul,
             DataRequired("Enter a password."),
             Length(min=8, message="Password must be at least 8 characters."),
         ],
@@ -39,8 +47,8 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", filters=[_normalize_email], validators=[DataRequired("Enter your email.")])
-    password = PasswordField("Password", validators=[DataRequired("Enter your password.")])
+    email = StringField("Email", filters=[_normalize_email], validators=[_no_nul, DataRequired("Enter your email.")])
+    password = PasswordField("Password", validators=[_no_nul, DataRequired("Enter your password.")])
     submit = SubmitField("Log in")
 
 
