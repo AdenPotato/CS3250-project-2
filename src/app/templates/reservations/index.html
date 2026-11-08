@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Reservations</h2>
+    <hr>
+    {% if reservations %}
+        <div class="row">
+            {% for reservation in reservations %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ reservation.listing.title }}</h5>
+                        <p class="card-text">
+                            <strong>Vendor:</strong> {{ reservation.listing.vendor.name }}<br>
+                            <strong>Pickup Location:</strong> {{ reservation.listing.location }}<br>
+                            <strong>Pickup Window:</strong> {{ reservation.listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ reservation.listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}<br>
+                            <strong>Portions:</strong> {{ reservation.portions }}<br>
+                            <strong>Pickup Code:</strong> <span class="badge bg-dark">{{ reservation.pickup_code }}</span><br>
+                            <strong>Status:</strong> {{ reservation.status.value }}
+                        </p>
+                        {% if reservation.status.value == 'active' and reservation.listing.pickup_end > now %}
+                            <form method="POST" action="{{ url_for('main.cancel_reservation', reservation_id=reservation.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger">Cancel</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You have no reservations.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
