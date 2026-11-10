@@ -7,7 +7,7 @@ from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import ListingForm, LoginForm, RegisterForm
+from .forms import ListingForm, LoginForm, RegisterForm, ReserveForm
 from .models import DietaryTag, Listing, Reservation, ReservationStatus, Role, User
 
 bp = Blueprint("main", __name__)
@@ -195,3 +195,48 @@ def cancel_reservation(reservation_id):
         db.session.rollback()
         flash("Could not cancel reservation.", "error")
     return redirect(url_for("main.my_reservations"))
+
+
+@bp.route("/listings/<int:listing_id>/reserve", methods=["GET", "POST"])
+@role_required(Role.STUDENT)
+def reserve_listing(listing_id):
+    listing = db.session.execute(
+        db.select(Listing)
+        .where(Listing.id == listing_id)
+        .where(Listing.cancelled.is_(False))
+        .where(Listing.pickup_end > datetime.now(timezone.utc))
+        .with_for_update()
+    ).scalar_one_or_none()
+    if not listing:
+        abort(404)
+
+    form = ReserveForm()
+    if form.validate_on_submit():
+        portions_to_reserve = form.portions.data
+        already_reserved = db.session.execute(
+            db.select(Reservation)
+            .where(Reservation.user_id == current_user.id)
+            .where(Reservation.listing_id == listing.id)
+            .where(Reservation.status == ReservationStatus.ACTIVE)
+        ).scalar_one_or_none()
+        if already_reserved:
+            flash("You already have a reservation for this listing.", "error")
+            return render_template("listings/reserve.html", title="Reserve Listing", form=form, listing=listing)
+        if portions_to_reserve > listing.portions_remaining:
+            flash("Not enough portions available.", "error")
+            return render_template("listings/reserve.html", title="Reserve Listing", form=form, listing=listing)
+
+        reservation = Reservation(
+            user_id=current_user.id,
+            listing_id=listing.id,
+            portions=portions_to_reserve,
+            pickup_code=Reservation.generate_pickup_code(),
+            status=ReservationStatus.ACTIVE,
+        )
+        listing.portions_remaining -= portions_to_reserve
+        db.session.add(reservation)
+        db.session.commit()
+        flash(f"Reserved! Your pickup code is {reservation.pickup_code}", "success")
+        return redirect(url_for("main.my_reservations"))
+
+    return render_template("listings/reserve.html", title="Reserve Listing", form=form, listing=listing)
