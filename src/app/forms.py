@@ -109,7 +109,13 @@ class ListingForm(FlaskForm):
     )
     submit = SubmitField("Post Listing")
 
+    # the edit route sets this, so a listing whose window has already opened can still be saved
+    # as long as its start is left as it was (US5.2)
+    current_start = None
+
     def validate_window_start(self, field):
+        if field.data and self.current_start and field.data == self.current_start.replace(second=0, microsecond=0):
+            return
         if field.data and field.data < datetime.now(timezone.utc):
             raise ValidationError("Pickup window start cannot be in the past.")
 
