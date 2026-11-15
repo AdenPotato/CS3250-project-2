@@ -98,3 +98,8 @@ class ReserveForm(FlaskForm):
     choices = [(1, "1 portion"), (2, "2 portions")]
     portions = RadioField("Portions to Reserve", choices=choices, coerce=int, validators=[InputRequired()])
     submit = SubmitField("Reserve")
+
+
+class PickupCodeForm(FlaskForm):
+    pickup_code = StringField("Pickup Code", validators=[DataRequired("Enter the pickup code.")])
+    submit = SubmitField("Confirm Pickup")
