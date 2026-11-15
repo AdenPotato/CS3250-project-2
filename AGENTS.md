@@ -83,8 +83,8 @@ Claude Code enforces these through `.claude/settings.json`. Other tools must fol
 
 - **Never read** `.env` files, `*.pem` or `*.key`.
 - **Never run** `git push --force` (or `-f`, `--force-with-lease`), `git push origin main`, or `docker compose down -v` without being asked (it deletes the database volume).
-- **Ask first** before `gh issue create`, `gh pr create`, `gh pr merge`, creating a branch, `git merge`, `git tag`, `docker compose up`, `docker compose down`, or `docker build`.
-- **Free to run:** `pytest`, `docker compose ps`, `docker compose logs`, `pip install -r requirements.txt`, and read-only git (`status`, `diff`, `log`, `branch`).
+- **Ask first** before `gh issue create`, `gh pr create`, `gh pr merge`, creating a branch, `git merge`, or `git tag`.
+- **Free to run:** `pytest`, `docker compose` (`up`, `down`, `ps`, `logs`, `exec`, ...), `docker build`, `pip install -r requirements.txt`, and read-only git (`status`, `diff`, `log`, `branch`). `docker compose down -v`, `docker volume rm` and `docker system prune` stay denied - they delete the database.
 
 ## Running the app
 
