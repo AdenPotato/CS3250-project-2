@@ -9,7 +9,12 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker build:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker images:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -26,7 +31,14 @@
       "Bash(git push -f:*)",
       "Bash(git push --force-with-lease)",
       "Bash(git push --force-with-lease:*)",
-      "Bash(git push origin main:*)"
+      "Bash(git push origin main:*)",
+      "Bash(docker compose down -v)",
+      "Bash(docker compose down -v:*)",
+      "Bash(docker compose down --volumes)",
+      "Bash(docker compose down --volumes:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker volume prune:*)",
+      "Bash(docker system prune:*)"
     ],
     "ask": [
       "Bash(gh issue create:*)",
@@ -35,10 +47,7 @@
       "Bash(git checkout -b:*)",
       "Bash(git switch -c:*)",
       "Bash(git merge:*)",
-      "Bash(git tag:*)",
-      "Bash(docker build:*)",
-      "Bash(docker compose up:*)",
-      "Bash(docker compose down:*)"
+      "Bash(git tag:*)"
     ]
   }
 }
