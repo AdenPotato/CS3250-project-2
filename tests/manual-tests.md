@@ -29,6 +29,11 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US4 | 2: Request more than remain - no reservation, error shown |  |  |  | try to reserve more portions than remain - no reservation created, error message shown |
 | US4 | 3: Cannot reserve again if already have active reservation for listing |  |  |  | try to reserve again for same listing with active reservation - told already have reservation |
 | US4 | 4: Concurrent reservations - only one succeeds, portions never go below zero |  |  |  | two students reserve last portion simultaneously - only one reservation succeeds, remaining portions never go below zero |
+| US5 | 1: Vendor sees all listings with status and counts |  |  |  | vendor opens "My Listings" - sees all their listings with status (active/ended/cancelled) and portions reserved/remaining |
+| US5 | 2: Edit listing with no reservations allowed if valid |  |  |  | edit listing with no reservations, save valid changes - changes stored |
+| US5 | 3: Cannot reduce portions below reserved |  |  |  | listing has reservations, try to set portions below reserved - error, not allowed |
+| US5 | 4: Cancel listing cancels all active reservations and hides from students |  |  |  | cancel listing - no longer appears to students, all active reservations marked cancelled |
+| US5 | 5: View listing shows reservers, cannot see other vendors' listings |  |  |  | open a listing - see name and portions of every student who reserved it; vendors cannot access others' listings |
 | US6 | 1: View my reservations with details and status |  |  |  | logged in as student, open "My Reservations" - see each reservation with listing title, vendor, location, pickup window, portions, pickup code, status |
 | US6 | 2: Cancel active reservation before window ends, portions returned |  |  |  | cancel active reservation with pickup window not ended - status becomes cancelled, portions returned to listing |
 | US6 | 3: No cancel option for non-active reservations |  |  |  | for non-active reservations (picked up/cancelled/no-show), no "Cancel" option shown |
