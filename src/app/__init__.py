@@ -39,6 +39,10 @@ def create_app():
     def nav_helpers():
         return {"has_endpoint": lambda name: name in app.view_functions}
 
+    # stored times are UTC; every page shows them on the campus clock (#95)
+    from .campus_time import format_campus
+    app.add_template_filter(format_campus, "campus")
+
     # the grader runs no SQL, so the schema creates itself on startup
     with app.app_context():
         db.create_all()

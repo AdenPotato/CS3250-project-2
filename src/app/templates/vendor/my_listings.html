@@ -30,7 +30,7 @@
                             {% endif %}
                         </td>
                         <td>{{ (listing.portions - listing.portions_remaining) }} / {{ listing.portions_remaining }} / {{ listing.portions }}</td>
-                        <td>{{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                        <td>{{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}</td>
                         <td>
                             {% if not listing.cancelled and listing.pickup_end > now %}
                                 <a href="{{ url_for('main.edit_listing', listing_id=listing.id) }}" class="btn btn-sm btn-secondary">Edit</a>

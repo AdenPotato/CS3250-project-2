@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, PasswordField, RadioField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
 from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, StopValidation, ValidationError
 
 from . import db
+from .campus_time import campus_to_utc, to_campus
 from .models import Role, User
 
 
@@ -17,6 +18,20 @@ def _no_nul(form, field):
     # StopValidation, not ValidationError, so validate_email never queries with this value
     if field.data and "\x00" in field.data:
         raise StopValidation("This field contains an invalid character.")
+
+
+class CampusDateTimeField(DateTimeLocalField):
+    # the browser sends campus wall-clock time; data holds it as aware UTC so it is stored
+    # and compared at the right instant (#95), and is shown back on the campus clock
+    def process_formdata(self, valuelist):
+        super().process_formdata(valuelist)
+        if self.data is not None:
+            self.data = campus_to_utc(self.data)
+
+    def _value(self):
+        if self.raw_data:
+            return " ".join(self.raw_data)
+        return to_campus(self.data).strftime(self.format[0]) if self.data else ""
 
 
 class RegisterForm(FlaskForm):
@@ -86,20 +101,20 @@ class ListingForm(FlaskForm):
         widget=widgets.ListWidget(prefix_label=False),
         option_widget=widgets.CheckboxInput()
     )
-    window_start = DateTimeLocalField(
+    window_start = CampusDateTimeField(
         "Pickup Window Start", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup start time.")]
     )
-    window_end = DateTimeLocalField(
+    window_end = CampusDateTimeField(
         "Pickup Window End", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup end time.")]
     )
     submit = SubmitField("Post Listing")
 
     def validate_window_start(self, field):
-        if field.data and field.data < datetime.now():
+        if field.data and field.data < datetime.now(timezone.utc):
             raise ValidationError("Pickup window start cannot be in the past.")
 
     def validate_window_end(self, field):
-        if field.data and field.data < datetime.now():
+        if field.data and field.data < datetime.now(timezone.utc):
             raise ValidationError("Pickup window end cannot be in the past.")
         if field.data and self.window_start.data and field.data <= self.window_start.data:
             raise ValidationError("Pickup window end must be after the start time.")
