@@ -16,7 +16,7 @@
                             <strong>Vendor:</strong> {{ listing.vendor.name }}<br>
                             <strong>Pickup Location:</strong> {{ listing.location }}<br>
                             <strong>Portions Remaining:</strong> {{ listing.portions_remaining }}<br>
-                            <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+                            <strong>Pickup Window:</strong> {{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}
                         </p>
                         {% if listing.tags %}
                         <p class="card-text">

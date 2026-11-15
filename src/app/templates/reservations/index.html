@@ -14,7 +14,7 @@
                         <p class="card-text">
                             <strong>Vendor:</strong> {{ reservation.listing.vendor.name }}<br>
                             <strong>Pickup Location:</strong> {{ reservation.listing.location }}<br>
-                            <strong>Pickup Window:</strong> {{ reservation.listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ reservation.listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}<br>
+                            <strong>Pickup Window:</strong> {{ reservation.listing.pickup_start | campus }} - {{ reservation.listing.pickup_end | campus }}<br>
                             <strong>Portions:</strong> {{ reservation.portions }}<br>
                             <strong>Pickup Code:</strong> <span class="badge bg-dark">{{ reservation.pickup_code }}</span><br>
                             <strong>Status:</strong> {{ reservation.status.value }}

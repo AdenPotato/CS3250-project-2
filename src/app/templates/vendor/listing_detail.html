@@ -7,7 +7,7 @@
     <p>
         <strong>Location:</strong> {{ listing.location }}<br>
         <strong>Portions:</strong> {{ listing.portions }} (remaining: {{ listing.portions_remaining }})<br>
-        <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+        <strong>Pickup Window:</strong> {{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}
     </p>
     <hr>
     <h4>Reservations</h4>
