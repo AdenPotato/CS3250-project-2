@@ -53,8 +53,12 @@ class LoginForm(FlaskForm):
 
 
 class ListingForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired("Enter a title."), Length(max=150)])
-    description = TextAreaField("Description", validators=[DataRequired("Enter a description.")])
+    # limits match the String(100) columns in models.py, so a long value is a form error, not a 500
+    title = StringField(
+        "Title",
+        validators=[_no_nul, DataRequired("Enter a title."), Length(max=100, message="Title must be at most 100 characters.")],
+    )
+    description = TextAreaField("Description", validators=[_no_nul, DataRequired("Enter a description.")])
     portions = IntegerField(
         "Portions Available",
         validators=[
@@ -62,7 +66,14 @@ class ListingForm(FlaskForm):
             NumberRange(min=1, max=100, message="Portions must be between 1 and 100."),
         ],
     )
-    location = StringField("Pickup Location", validators=[DataRequired("Enter a pickup location.")])
+    location = StringField(
+        "Pickup Location",
+        validators=[
+            _no_nul,
+            DataRequired("Enter a pickup location."),
+            Length(max=100, message="Pickup location must be at most 100 characters."),
+        ],
+    )
     dietary_tags = SelectMultipleField(
         "Dietary Tags",
         choices=[
