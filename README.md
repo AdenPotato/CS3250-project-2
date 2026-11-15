@@ -43,6 +43,8 @@ pytest tests/test_selenium_us1.py -v
 
 Without Chrome the Selenium tests are skipped locally; in CI (`CI` set) they fail instead, so a missing browser is never mistaken for a pass.
 
+**Selenium regression tests (US4-US7).** `tests/test_selenium_us4.py` to `test_selenium_us7.py` have one test per acceptance criterion of reserving, managing listings, my reservations and confirming pickups, failure cases included. They register their own accounts and post their own listings through the pages, so they pass on any database and on a second run. The shared helpers are in `tests/conftest.py`. A browser cannot make time pass, so the tests for an ended pickup window (US5.1, US6.3, US7.3) move that window into the past with `docker compose exec db psql`. They are regression checks run before each release; the graded manual evidence for these stories is still the click-throughs in `tests/manual-tests.md`. Run them with `pytest tests/test_selenium_us4.py tests/test_selenium_us5.py tests/test_selenium_us6.py tests/test_selenium_us7.py -v`.
+
 # Overview
 
 In this project your Scrum team will build **CampusEats**, a web app for rescuing surplus food on campus, over three one-week sprints. Before Sprint 1 starts, your team scores and prioritizes the Product Backlog and plans which user stories go into which sprint. During the sprints you run Scrum events, track work on a Kanban board, use Git and GitHub with one tagged release per sprint, and deploy the app with Docker Compose and PostgreSQL.

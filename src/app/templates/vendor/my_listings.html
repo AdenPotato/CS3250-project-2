@@ -18,9 +18,9 @@
                 </thead>
                 <tbody>
                     {% for listing in listings %}
-                    <tr>
+                    <tr id="listing-row-{{ listing.id }}">
                         <td><a href="{{ url_for('main.view_listing_reservations', listing_id=listing.id) }}">{{ listing.title }}</a></td>
-                        <td>
+                        <td class="listing-status">
                             {% if listing.cancelled %}
                                 cancelled
                             {% elif listing.pickup_end <= now %}
@@ -29,14 +29,14 @@
                                 active
                             {% endif %}
                         </td>
-                        <td>{{ (listing.portions - listing.portions_remaining) }} / {{ listing.portions_remaining }} / {{ listing.portions }}</td>
+                        <td class="listing-counts">{{ (listing.portions - listing.portions_remaining) }} / {{ listing.portions_remaining }} / {{ listing.portions }}</td>
                         <td>{{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}</td>
                         <td>
                             {% if not listing.cancelled and listing.pickup_end > now %}
-                                <a href="{{ url_for('main.edit_listing', listing_id=listing.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="{{ url_for('main.edit_listing', listing_id=listing.id) }}" id="edit-listing-{{ listing.id }}" class="btn btn-sm btn-secondary">Edit</a>
                                 <form method="POST" action="{{ url_for('main.cancel_listing', listing_id=listing.id) }}" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                    <button type="submit" id="cancel-listing-{{ listing.id }}" class="btn btn-sm btn-danger">Cancel</button>
                                 </form>
                             {% endif %}
                         </td>
