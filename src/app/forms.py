@@ -148,5 +148,6 @@ class ReserveForm(FlaskForm):
 
 
 class PickupCodeForm(FlaskForm):
-    pickup_code = StringField("Pickup Code", validators=[DataRequired("Enter the pickup code.")])
+    # _no_nul first: the code is looked up in postgres, which rejects a NUL byte with a 500 (US7.2)
+    pickup_code = StringField("Pickup Code", validators=[_no_nul, DataRequired("Enter the pickup code.")])
     submit = SubmitField("Confirm Pickup")
