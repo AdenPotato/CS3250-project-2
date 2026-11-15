@@ -13,5 +13,6 @@ COPY src/ .
 
 EXPOSE 5000
 
+# seed first so a fresh volume has accounts and listings (idempotent, safe on every restart);
 # 0.0.0.0 so the 5000:5000 port mapping reaches the server - flask binds loopback by default
-CMD ["flask", "--app", "app", "run", "--host=0.0.0.0", "--port=5000"]
+CMD ["sh", "-c", "python seed.py && exec flask --app app run --host=0.0.0.0 --port=5000"]
