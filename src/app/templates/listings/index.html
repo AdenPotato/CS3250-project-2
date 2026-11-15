@@ -30,7 +30,7 @@
         <div class="row">
             {% for listing in listings %}
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 listing-card" id="listing-{{ listing.id }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ listing.title }}</h5>
                         <p class="card-text text-muted">{{ listing.description }}</p>

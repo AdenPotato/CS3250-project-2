@@ -24,11 +24,11 @@
                 </thead>
                 <tbody>
                     {% for r in reservations %}
-                    <tr>
-                        <td>{{ r.student.name }}</td>
-                        <td>{{ r.portions }}</td>
+                    <tr class="reservation-row" data-code="{{ r.pickup_code }}">
+                        <td class="reservation-student">{{ r.student.name }}</td>
+                        <td class="reservation-portions">{{ r.portions }}</td>
                         <td>{{ r.pickup_code }}</td>
-                        <td>{{ r.status.value }}</td>
+                        <td class="reservation-status">{{ r.status.value }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
