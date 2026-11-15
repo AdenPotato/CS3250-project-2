@@ -85,6 +85,7 @@ Claude Code enforces these through `.claude/settings.json`. Other tools must fol
 - **Never run** `git push --force` (or `-f`, `--force-with-lease`), `git push origin main`, or `docker compose down -v` without being asked (it deletes the database volume).
 - **Ask first** before `gh issue create`, `gh pr create`, `gh pr merge`, creating a branch, `git merge`, or `git tag`.
 - **Free to run:** `pytest`, `docker compose` (`up`, `down`, `ps`, `logs`, `exec`, ...), `docker build`, `pip install -r requirements.txt`, and read-only git (`status`, `diff`, `log`, `branch`). `docker compose down -v`, `docker volume rm` and `docker system prune` stay denied - they delete the database.
+- **Clean up after yourself.** An agent that started containers runs `docker compose down` (with the same `-p` project name and override files it started them with) when its task is done, so its containers and network are stopped and removed. The volume is kept; only a teammate deletes it.
 
 ## Running the app
 
