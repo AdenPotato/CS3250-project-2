@@ -33,7 +33,7 @@ class Listing {
     description : str
     portions : int <<1..100>>
     portions_remaining : int <<0..portions>>
-    location : str
+    location : str <<one of CAMPUS_LOCATIONS>>
     pickup_start : datetime
     pickup_end : datetime <<after pickup_start>>
     cancelled : bool

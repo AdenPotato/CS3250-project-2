@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, PasswordField, RadioField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
+from wtforms import IntegerField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
 from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, StopValidation, ValidationError
 
 from . import db
 from .campus_time import campus_to_utc, to_campus
-from .models import Role, User
+from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, Role, User
 
 
 def _normalize_email(value):
@@ -81,13 +81,12 @@ class ListingForm(FlaskForm):
             NumberRange(min=1, max=100, message="Portions must be between 1 and 100."),
         ],
     )
-    location = StringField(
+    # a fixed campus list, so students can filter by exact location (US8.2); SelectField
+    # rejects any value not in the list with "Not a valid choice."
+    location = SelectField(
         "Pickup Location",
-        validators=[
-            _no_nul,
-            DataRequired("Enter a pickup location."),
-            Length(max=100, message="Pickup location must be at most 100 characters."),
-        ],
+        choices=[("", "Choose a location")] + [(loc, loc) for loc in CAMPUS_LOCATIONS],
+        validators=[DataRequired("Choose a pickup location.")],
     )
     dietary_tags = SelectMultipleField(
         "Dietary Tags",
@@ -124,6 +123,22 @@ class ListingForm(FlaskForm):
             raise ValidationError("Pickup window end cannot be in the past.")
         if field.data and self.window_start.data and field.data <= self.window_start.data:
             raise ValidationError("Pickup window end must be after the start time.")
+
+
+class ListingFilterForm(FlaskForm):
+    # read from the query string on GET /listings, so filters show in the URL and need no CSRF
+    class Meta:
+        csrf = False
+
+    tags = SelectMultipleField(
+        "Dietary tags",
+        choices=[(t, t.title()) for t in DIETARY_TAGS],
+        widget=widgets.ListWidget(prefix_label=False),
+        option_widget=widgets.CheckboxInput(),
+    )
+    location = SelectField(
+        "Campus location", choices=[("", "Any location")] + [(loc, loc) for loc in CAMPUS_LOCATIONS]
+    )
 
 
 class ReserveForm(FlaskForm):
