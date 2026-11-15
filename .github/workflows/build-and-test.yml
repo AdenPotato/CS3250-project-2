@@ -39,7 +39,7 @@ jobs:
       - name: Run the tests
         if: hashFiles('docker-compose.yml') != '' && hashFiles('tests/**/test_*.py') != ''
         run: |
-          pip install pytest selenium
+          pip install -r requirements-dev.txt
           pytest tests
 
       - name: Container logs

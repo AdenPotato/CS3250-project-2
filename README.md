@@ -29,11 +29,19 @@ The tests are black box: they talk to the running Compose app over HTTP, so star
 
 ```
 docker compose up --build -d
-pip install pytest
+pip install -r requirements-dev.txt
 pytest tests
 ```
 
 They expect the app at http://localhost:5000. To test another address, set `CAMPUSEATS_URL`, e.g. `CAMPUSEATS_URL=http://localhost:8000 pytest tests`. The database checks run `docker compose exec db psql`, so run them from the repository root; they are skipped if Docker is not available.
+
+**Selenium test (US1).** `tests/test_selenium_us1.py` is the automated black box test. It drives headless Chrome through registration and login and covers every US1 acceptance criterion, including the failure cases: a duplicate email and each empty field. It needs Google Chrome or Chromium installed; Selenium finds the matching driver itself. US1.4 (hashed passwords) cannot be seen in a browser, so that test reads the stored hash from PostgreSQL instead of calling the app. Run it on its own with:
+
+```
+pytest tests/test_selenium_us1.py -v
+```
+
+Without Chrome the Selenium tests are skipped locally; in CI (`CI` set) they fail instead, so a missing browser is never mistaken for a pass.
 
 # Overview
 
