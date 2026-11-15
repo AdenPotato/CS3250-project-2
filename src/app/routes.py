@@ -119,22 +119,28 @@ def edit_listing(listing_id):
     if not listing or listing.vendor_id != current_user.id:
         abort(404)
     form = ListingForm(obj=listing)
+    form.current_start = listing.pickup_start
     if request.method == 'GET':
         form.window_start.data = listing.pickup_start
         form.window_end.data = listing.pickup_end
         form.dietary_tags.data = [t.name for t in listing.tags]
 
     if form.validate_on_submit():
+        # lock the row as reserve_listing does, so a reservation made during the save is not lost
+        db.session.refresh(listing, with_for_update=True)
+        # picked-up and no-show portions are gone too, so only cancelled ones are free (US5.3)
         reserved_total = db.session.scalar(
             db.select(db.func.coalesce(db.func.sum(Reservation.portions), 0)).where(
                 Reservation.listing_id == listing.id,
-                Reservation.status == ReservationStatus.ACTIVE,
+                Reservation.status != ReservationStatus.CANCELLED,
             )
         ) or 0
 
         new_portions = form.portions.data
         if new_portions < reserved_total:
-            flash("Cannot set portions below the number already reserved.", "error")
+            form.portions.errors.append(
+                f"{reserved_total} portions are already reserved, so portions cannot be set below {reserved_total}."
+            )
             return render_template("vendor/edit_listing.html", title="Edit Listing", form=form, listing=listing)
 
         selected_tags = []
