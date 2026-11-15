@@ -158,6 +158,19 @@ class Reservation(db.Model):
                 return code
 
 
+def mark_no_shows():
+    # US7.3: active reservations whose pickup window has ended become no-show. stored, not computed
+    # in templates, so every page and later counts read the same status from the database
+    ended = db.select(Listing.id).where(Listing.pickup_end <= datetime.now(timezone.utc))
+    db.session.execute(
+        db.update(Reservation)
+        .where(Reservation.status == ReservationStatus.ACTIVE, Reservation.listing_id.in_(ended))
+        .values(status=ReservationStatus.NO_SHOW)
+        .execution_options(synchronize_session=False)
+    )
+    db.session.commit()
+
+
 def ensure_dietary_tags():
     # idempotent, so every restart is safe and a fresh volume always has the five tags
     existing = set(db.session.scalars(db.select(DietaryTag.name)))

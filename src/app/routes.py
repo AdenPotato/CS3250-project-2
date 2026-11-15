@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from . import db
 from .forms import ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RegisterForm, ReserveForm
-from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Reservation, ReservationStatus, Role, User
+from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Reservation, ReservationStatus, Role, User, mark_no_shows
 
 bp = Blueprint("main", __name__)
 
@@ -201,6 +201,7 @@ def view_listing_reservations(listing_id):
     listing = db.session.get(Listing, listing_id)
     if not listing or listing.vendor_id != current_user.id:
         abort(404)
+    mark_no_shows()
     reservations = db.session.scalars(
         db.select(Reservation).where(Reservation.listing_id == listing.id).order_by(Reservation.created_at.desc())
     ).all()
@@ -266,6 +267,7 @@ def listings():
 @bp.route("/reservations")
 @role_required(Role.STUDENT)
 def my_reservations():
+    mark_no_shows()
     now = datetime.now(timezone.utc)
     reservations = db.session.scalars(
         db.select(Reservation)
@@ -278,6 +280,7 @@ def my_reservations():
 @bp.route("/reservations/<int:reservation_id>/cancel", methods=["POST"])
 @role_required(Role.STUDENT)
 def cancel_reservation(reservation_id):
+    mark_no_shows()
     reservation = db.session.execute(
         db.select(Reservation)
         .where(Reservation.id == reservation_id)
@@ -359,19 +362,8 @@ def reserve_listing(listing_id):
 @bp.route("/vendor/confirm-pickup", methods=["GET", "POST"])
 @role_required(Role.VENDOR)
 def confirm_pickup():
+    mark_no_shows()
     now = datetime.now(timezone.utc)
-    # mark expired active reservations on this vendor's listings as no-show
-    expired = db.session.scalars(
-        db.select(Reservation)
-        .join(Listing)
-        .where(Listing.vendor_id == current_user.id)
-        .where(Reservation.status == ReservationStatus.ACTIVE)
-        .where(Listing.pickup_end <= now)
-    ).all()
-    for r in expired:
-        r.status = ReservationStatus.NO_SHOW
-    if expired:
-        db.session.commit()
 
     form = PickupCodeForm()
     if form.validate_on_submit():
@@ -383,6 +375,9 @@ def confirm_pickup():
         listing = reservation.listing
         if listing.vendor_id != current_user.id:
             flash("This pickup code does not belong to one of your listings.", "error")
+            return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
+        if reservation.status == ReservationStatus.NO_SHOW:
+            flash("This reservation has expired and is marked as no-show.", "error")
             return render_template("vendor/confirm_pickup.html", title="Confirm Pickup", form=form)
         if reservation.status != ReservationStatus.ACTIVE:
             flash("This reservation has already been used or cancelled.", "error")
