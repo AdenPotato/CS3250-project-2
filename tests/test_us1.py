@@ -52,9 +52,13 @@ class Browser:
     def post_form(self, path, fields, form_page=None):
         # GET the page holding the form for its CSRF token, as a browser would
         _, _, html = self.get(form_page or path)
-        token = re.search(r'name="csrf_token"[^>]*value="([^"]+)"', html)
-        assert token, f"no csrf_token on {form_page or path}"
-        return self.request(path, {"csrf_token": token.group(1), **fields})
+        return self.request(path, {"csrf_token": csrf_token_in(html), **fields})
+
+
+def csrf_token_in(html):
+    token = re.search(r'name="csrf_token"[^>]*value="([^"]+)"', html)
+    assert token, "no csrf_token on the page"
+    return token.group(1)
 
 
 def location_path(location):
@@ -281,3 +285,132 @@ def test_us1_5_logout_ends_the_session():
     assert status == 302 and location_path(location) == "/login"
     status, location, _ = browser.get("/student")
     assert status == 302 and location_path(location) == "/login"
+
+
+# ---------- #76 a NUL byte is a form error, not a 500 ----------
+
+NUL_ERROR = "This field contains an invalid character."
+
+
+@pytest.mark.parametrize("field", ["name", "email", "password"])
+def test_nul_byte_in_register_field_is_a_form_error(field):
+    email = unique_email()
+    name = f"Nul {uuid.uuid4().hex[:10]}"
+    values = {"name": name, "email": email, "password": PASSWORD}
+    values[field] = "a\x00" + values[field]
+    status, _, html = register(Browser(), **values)
+    assert status == 200
+    assert has_id(html, f"register-{field}-error")
+    assert NUL_ERROR in html
+    # one of the two is always the clean value, so this holds whichever field had the NUL
+    assert count_users(email) == 0
+    assert db_query(f"SELECT count(*) FROM users WHERE name = '{name}'") == "0"
+
+
+@pytest.mark.parametrize("field", ["email", "password"])
+def test_nul_byte_in_login_field_is_a_form_error(field):
+    browser = Browser()
+    email = unique_email()
+    register(browser, email=email)
+    values = {"email": email, "password": PASSWORD}
+    values[field] = "a\x00" + values[field]
+    status, _, html = login(browser, **values)
+    assert status == 200
+    assert has_id(html, f"login-{field}-error")
+    assert NUL_ERROR in html
+    assert has_id(html, "nav-login") and not has_id(html, "nav-user")
+
+
+# ---------- #76 a CSRF failure says so and leaves a form that works ----------
+
+SESSION_EXPIRED = "Your session expired - please try again."
+CSRF_PAGES = ["/register", "/login"]
+
+
+def account_fields():
+    return {"name": "Csrf User", "email": unique_email(), "password": PASSWORD, "role": "student"}
+
+
+def assert_session_expired_form(status, html, path):
+    assert status == 200
+    assert has_id(html, "flash-error")
+    assert SESSION_EXPIRED in html
+    assert has_id(html, f"{path.strip('/')}-form")
+
+
+@pytest.mark.parametrize("path", CSRF_PAGES)
+def test_csrf_no_session_shows_message(path):
+    status, _, html = Browser().request(path, account_fields())
+    assert_session_expired_form(status, html, path)
+
+
+@pytest.mark.parametrize("path", CSRF_PAGES)
+def test_csrf_bad_token_shows_message(path):
+    browser = Browser()
+    browser.get(path)
+    status, _, html = browser.request(path, {"csrf_token": "stale", **account_fields()})
+    assert_session_expired_form(status, html, path)
+
+
+def test_csrf_failure_does_not_create_an_account():
+    fields = account_fields()
+    Browser().request("/register", fields)
+    assert count_users(fields["email"]) == 0
+
+
+def test_csrf_failure_does_not_log_in():
+    browser = Browser()
+    fields = account_fields()
+    register(browser, **fields)
+    status, _, html = browser.request("/login", fields)
+    assert_session_expired_form(status, html, "/login")
+    assert has_id(html, "nav-login") and not has_id(html, "nav-user")
+    status, location, _ = browser.get("/student")
+    assert status == 302 and location_path(location) == "/login"
+
+
+def test_csrf_retry_from_the_rerendered_form_succeeds():
+    browser = Browser()
+    fields = account_fields()
+    _, _, html = browser.request("/register", fields)
+    status, location, _ = browser.request("/register", {"csrf_token": csrf_token_in(html), **fields})
+    assert status == 302 and location_path(location) == "/login"
+
+
+def test_csrf_failure_elsewhere_stays_a_400():
+    status, _, html = Browser().request("/logout", {})
+    assert status == 400
+    assert SESSION_EXPIRED not in html
+
+
+# ---------- #76 /register sends a signed-in user to their home ----------
+
+def logged_in_browser(role):
+    browser = Browser()
+    email = unique_email()
+    register(browser, email=email, role=role)
+    login(browser, email)
+    return browser
+
+
+@pytest.mark.parametrize("role, home", [("student", "/student"), ("vendor", "/vendor")])
+def test_register_page_redirects_logged_in_user_home(role, home):
+    status, location, _ = logged_in_browser(role).get("/register")
+    assert status == 302 and location_path(location) == home
+
+
+def test_logged_in_user_cannot_post_a_second_account():
+    browser = logged_in_browser("student")
+    second = unique_email()
+    fields = {"name": "Second", "email": second, "password": PASSWORD, "role": "vendor"}
+    status, location, _ = browser.post_form("/register", fields, form_page="/student")
+    assert status == 302 and location_path(location) == "/student"
+    assert count_users(second) == 0
+
+
+def test_logged_in_csrf_failure_on_register_still_redirects_home():
+    browser = logged_in_browser("student")
+    second = unique_email()
+    status, location, _ = browser.request("/register", {"name": "Second", "email": second, "password": PASSWORD})
+    assert status == 302 and location_path(location) == "/student"
+    assert count_users(second) == 0
