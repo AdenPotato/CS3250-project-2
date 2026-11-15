@@ -7,8 +7,8 @@ from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import ListingForm, LoginForm, PickupCodeForm, RegisterForm, ReserveForm
-from .models import DietaryTag, Listing, Reservation, ReservationStatus, Role, User
+from .forms import ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RegisterForm, ReserveForm
+from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Reservation, ReservationStatus, Role, User
 
 bp = Blueprint("main", __name__)
 
@@ -237,15 +237,24 @@ def new_listing():
 @bp.route("/listings")
 @role_required(Role.STUDENT)
 def listings():
-    now = datetime.now(timezone.utc)
-    listings = db.session.scalars(
+    form = ListingFilterForm(formdata=request.args)
+    # unknown values from a hand-edited URL are ignored rather than shown as errors
+    tags = [t for t in form.tags.data or [] if t in DIETARY_TAGS]
+    location = form.location.data if form.location.data in CAMPUS_LOCATIONS else None
+
+    query = (
         db.select(Listing)
         .where(Listing.cancelled.is_(False))
-        .where(Listing.pickup_end > now)
+        .where(Listing.pickup_end > datetime.now(timezone.utc))
         .where(Listing.portions_remaining > 0)
-        .order_by(Listing.pickup_end.asc())
-    ).all()
-    return render_template("listings/index.html", title="Available Listings", listings=listings)
+    )
+    # one condition per tag, so a listing must carry every selected tag (US8.1)
+    for tag in tags:
+        query = query.where(Listing.tags.any(DietaryTag.name == tag))
+    if location:
+        query = query.where(Listing.location == location)
+    listings = db.session.scalars(query.order_by(Listing.pickup_end.asc())).all()
+    return render_template("listings/index.html", title="Available Listings", listings=listings, form=form)
 
 
 @bp.route("/reservations")
