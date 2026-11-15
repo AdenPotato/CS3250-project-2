@@ -26,6 +26,9 @@
                             {% endfor %}
                         </p>
                         {% endif %}
+                        {% if current_user.is_authenticated and current_user.is_student and has_endpoint('main.reserve_listing') %}
+                            <a href="{{ url_for('main.reserve_listing', listing_id=listing.id) }}" class="btn btn-primary">Reserve</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
