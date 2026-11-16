@@ -68,6 +68,7 @@ def test_us10_2_rated_once_and_only_when_picked_up(driver, accounts):
     # an active reservation has no Rate button and its URL is refused
     log_in(driver, accounts["student2"]["email"])
     reserve(driver, listing_id, 1)
+    pickup_code_from_flash(driver)  # wait for the reservation, or the next page load cuts the POST off
     card = reservation_card(driver, listing_id)
     assert not card.find_elements(By.CLASS_NAME, "rate-reservation")
     driver.get(f"{BASE_URL}/reservations/{card.get_attribute('id').split('-')[1]}/rate")
