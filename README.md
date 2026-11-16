@@ -209,6 +209,8 @@ Justification (one or two sentences: team size, hours available, course load): <
 
 Planned burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0.
 
+Actual burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0 - see `burndown.xlsx` and `burndown.png`. Actual matched planned: every story planned for each sprint finished in it, so nothing carried over. Planned sits 2 points above the ideal line after Sprint 1 because the next story, US4 (8 points), depends on US3 and would have put Sprint 1 over its 16-point capacity.
+
 Re-plan on 10/27/26: Sprint 1 runs to 10/27/26 and Sprint 2 runs 10/28/26 to 11/08/26, taking every story planned for Sprints 2 and 3. Sprint 2 is twice as long as a one-week sprint, so its capacity is 32 points (16 per week).
 
 Dates updated 11/15/26: the due date moved to 11/15/26, so Sprint 1 ran 10/24/26 to 11/01/26 (v1 tagged 11/01/26) and Sprint 2 ran 11/02/26 to 11/15/26. Sprint 3 was never run; its stories were done in Sprint 2.
