@@ -3,42 +3,47 @@ title US4 - Reserve portions
 
 actor Student
 participant "Browser" as Browser
-participant "Flask (routes.reserve_listing)" as Route
+participant "Flask route\nreserve_listing" as Route
 participant "ReserveForm" as Form
 participant "Listing (Model)" as Listing
 participant "Reservation (Model)" as Reservation
 database "PostgreSQL" as DB
 
-Student -> Browser: Open /listings and click "Reserve"
+Student -> Browser: Click "Reserve" on /listings
 Browser -> Route: GET /listings/<id>/reserve
-Route -> DB: Load Listing, check cancelled, pickup_end, portions_remaining
-Route --> Browser: Render reserve.html with ReserveForm
+note right of Route: role_required(STUDENT) - a vendor or anonymous user never gets here
+Route -> DB: SELECT listing WHERE id, not cancelled,\npickup_end > now FOR UPDATE
+alt listing missing, cancelled or ended
+  Route --> Browser: 404 Not Found
+else listing available
+  Route --> Browser: Render listings/reserve.html with ReserveForm (1 or 2 portions)
+end
 
-Student -> Browser: Select 1 or 2 portions and submit
+Student -> Browser: Choose 1 or 2 portions, click "Reserve"
 Browser -> Route: POST /listings/<id>/reserve (with CSRF token)
+Route -> DB: SELECT listing ... FOR UPDATE
+note right of DB
+  the row lock makes a second student's request wait
+  until this one commits, so it sees the new
+  portions_remaining and cannot overbook (US4.4)
+end note
 Route -> Form: validate_on_submit()
-alt invalid form data
+alt no choice, or a value other than 1 or 2
   Form --> Route: errors
-  Route --> Browser: Re-render form with errors
-else valid form
-  Route -> DB: Check for active Reservation for (student, listing)
-  alt already has active reservation
-    Route --> Browser: Redirect to /listings with flash "You already have a reservation for this listing."
-  else no existing reservation
-    Route -> DB: Check portions_remaining >= requested
-    alt not enough portions
-      Route --> Browser: Re-render form with flash "Not enough portions remaining."
-    else enough portions
-      Route -> Listing: portions_remaining -= requested
-      Route -> Reservation: create Reservation(user_id, listing_id, portions, pickup_code=generate_pickup_code(), status=ACTIVE)
-      Route -> DB: COMMIT transaction
-      alt commit succeeds
-        Route --> Browser: Redirect to /listings with flash showing unique 6-char pickup code
-      else constraint/integrity error
-        Route -> DB: ROLLBACK
-        Route --> Browser: Re-render form with flash "Not enough portions remaining."
-      end
-    end
+  Route --> Browser: Re-render the form with the error
+else valid choice
+  Route -> DB: SELECT ACTIVE reservation for (student, listing)
+  alt student already has an active reservation
+    Route --> Browser: Re-render the form, flash "You already have a reservation for this listing."
+  else portions > portions_remaining
+    Route --> Browser: Re-render the form, flash "Not enough portions available." (US4.3)
+  else enough portions
+    Route -> Reservation: generate_pickup_code()
+    Reservation -> DB: SELECT reservation by code (repeat until unused)
+    Route -> Reservation: new Reservation(student, listing, portions, code, status ACTIVE)
+    Route -> Listing: portions_remaining -= portions (US4.2)
+    Route -> DB: INSERT reservation, UPDATE listing, COMMIT (releases the lock)
+    Route --> Browser: Redirect to /reservations,\nflash "Reserved! Your pickup code is XXXXXX" (US4.1)
   end
 end
 

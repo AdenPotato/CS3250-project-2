@@ -195,9 +195,9 @@ Before writing any code, split the backlog across the three sprints and record i
 * Planned burndown: list the story points remaining at the start and after each planned sprint.
 
 ```
-Team capacity (story points per sprint): <16 story points>
+Team capacity (story points per sprint): 16 story points
 
-Justification (one or two sentences: team size, hours available, course load): <With 5 team members balancing rigorous coursework and part-time responsibilities, each student contributes approximately 8 hours per week, establishing a reliable and sustainable team capacity of 16 story points per sprint.>
+Justification (one or two sentences: team size, hours available, course load): With 5 team members balancing rigorous coursework and part-time responsibilities, each student contributes approximately 8 hours per week, establishing a reliable and sustainable team capacity of 16 story points per sprint.
 ```
 
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
