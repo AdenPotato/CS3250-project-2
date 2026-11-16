@@ -73,11 +73,25 @@ class Reservation {
     generate_pickup_code() : str
 }
 
+class Rating {
+    id : int <<PK>>
+    reservation_id : int <<FK reservations, unique>>
+    stars : int <<1..5>>
+    comment : str <<optional, max 300>>
+    created_at : datetime
+}
+
+note right of Rating
+  only a picked-up reservation can be rated (US10.2),
+  checked in the rate route
+end note
+
 User "0..*" --> "1" Role
 User "1" -- "0..*" Listing : posts >
 Listing "0..*" -- "0..*" DietaryTag : tagged with >\n(listing_tags)
 User "1" -- "0..*" Reservation : makes >
 Listing "1" -- "0..*" Reservation : has >
 Reservation "0..*" --> "1" ReservationStatus
+Reservation "1" -- "0..1" Rating : rated by >
 
 @enduml

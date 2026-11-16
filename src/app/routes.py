@@ -8,8 +8,8 @@ from sqlalchemy.exc import IntegrityError
 
 from . import db
 from .campus_time import campus_to_utc, to_campus
-from .forms import DashboardForm, ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RegisterForm, ReserveForm
-from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Reservation, ReservationStatus, Role, User, mark_no_shows
+from .forms import DashboardForm, ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RatingForm, RegisterForm, ReserveForm
+from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Rating, Reservation, ReservationStatus, Role, User, mark_no_shows
 
 bp = Blueprint("main", __name__)
 
@@ -159,6 +159,17 @@ def dashboard():
     return render_template("vendor/dashboard.html", title="Impact Dashboard", form=form, stats=stats)
 
 
+def rating_summary(listing_ids):
+    # US10.3: {listing id: (average stars, number of ratings)} for listings with at least one rating
+    rows = db.session.execute(
+        db.select(Reservation.listing_id, db.func.avg(Rating.stars), db.func.count(Rating.id))
+        .join(Rating, Rating.reservation_id == Reservation.id)
+        .where(Reservation.listing_id.in_(listing_ids))
+        .group_by(Reservation.listing_id)
+    ).all()
+    return {listing_id: (round(float(avg), 1), n) for listing_id, avg, n in rows}
+
+
 @bp.route("/vendor/listings")
 @role_required(Role.VENDOR)
 def my_listings():
@@ -166,7 +177,10 @@ def my_listings():
         db.select(Listing).where(Listing.vendor_id == current_user.id).order_by(Listing.creation_date.desc())
     ).all()
     now = datetime.now(timezone.utc)
-    return render_template("vendor/my_listings.html", title="My Listings", listings=listings, now=now)
+    return render_template(
+        "vendor/my_listings.html", title="My Listings", listings=listings, now=now,
+        ratings=rating_summary([l.id for l in listings]),
+    )
 
 
 @bp.route("/vendor/listings/<int:listing_id>/edit", methods=["GET", "POST"])
@@ -262,7 +276,11 @@ def view_listing_reservations(listing_id):
     reservations = db.session.scalars(
         db.select(Reservation).where(Reservation.listing_id == listing.id).order_by(Reservation.created_at.desc())
     ).all()
-    return render_template("vendor/listing_detail.html", title="Listing Details", listing=listing, reservations=reservations)
+    rated = [r for r in reservations if r.rating]
+    return render_template(
+        "vendor/listing_detail.html", title="Listing Details", listing=listing, reservations=reservations,
+        rating=rating_summary([listing.id]).get(listing.id), rated=rated,
+    )
 
 
 @bp.route("/listings/new", methods=["GET", "POST"])
@@ -369,6 +387,35 @@ def cancel_reservation(reservation_id):
         db.session.rollback()
         flash("Could not cancel reservation.", "error")
     return redirect(url_for("main.my_reservations"))
+
+
+@bp.route("/reservations/<int:reservation_id>/rate", methods=["GET", "POST"])
+@role_required(Role.STUDENT)
+def rate_reservation(reservation_id):
+    reservation = db.session.get(Reservation, reservation_id)
+    if not reservation or reservation.user_id != current_user.id:
+        abort(404)
+    # US10.2: only a picked-up reservation, and only once
+    if reservation.rating:
+        flash("You have already rated this pickup.", "error")
+        return redirect(url_for("main.my_reservations"))
+    if reservation.status != ReservationStatus.PICKED_UP:
+        flash("Only picked-up reservations can be rated.", "error")
+        return redirect(url_for("main.my_reservations"))
+
+    form = RatingForm()
+    if form.validate_on_submit():
+        db.session.add(Rating(reservation_id=reservation.id, stars=form.stars.data, comment=form.comment.data or None))
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # a second tab submitted first; the unique reservation_id kept it to one rating
+            db.session.rollback()
+            flash("You have already rated this pickup.", "error")
+            return redirect(url_for("main.my_reservations"))
+        flash("Thanks! Your rating was submitted.", "success")
+        return redirect(url_for("main.my_reservations"))
+    return render_template("reservations/rate.html", title="Rate Pickup", form=form, reservation=reservation)
 
 
 @bp.route("/listings/<int:listing_id>/reserve", methods=["GET", "POST"])

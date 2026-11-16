@@ -13,6 +13,7 @@
                         <th>Status</th>
                         <th>Portions (reserved/remaining/total)</th>
                         <th>Pickup Window</th>
+                        <th>Rating</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -31,6 +32,9 @@
                         </td>
                         <td class="listing-counts">{{ (listing.portions - listing.portions_remaining) }} / {{ listing.portions_remaining }} / {{ listing.portions }}</td>
                         <td>{{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}</td>
+                        <td class="listing-rating">
+                            {% if ratings.get(listing.id) %}{{ ratings[listing.id][0] }}/5 ({{ ratings[listing.id][1] }}){% else %}no ratings{% endif %}
+                        </td>
                         <td>
                             {% if not listing.cancelled and listing.pickup_end > now %}
                                 <a href="{{ url_for('main.edit_listing', listing_id=listing.id) }}" id="edit-listing-{{ listing.id }}" class="btn btn-sm btn-secondary">Edit</a>

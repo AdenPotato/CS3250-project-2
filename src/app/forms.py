@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from flask_wtf import FlaskForm
 from wtforms import DateField, IntegerField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
-from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, StopValidation, ValidationError
+from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, Optional, StopValidation, ValidationError
 
 from . import db
 from .campus_time import campus_to_utc, to_campus
@@ -165,3 +165,18 @@ class PickupCodeForm(FlaskForm):
     # _no_nul first: the code is looked up in postgres, which rejects a NUL byte with a 500 (US7.2)
     pickup_code = StringField("Pickup Code", validators=[_no_nul, DataRequired("Enter the pickup code.")])
     submit = SubmitField("Confirm Pickup")
+
+
+class RatingForm(FlaskForm):
+    stars = RadioField(
+        "Stars",
+        choices=[(n, f"{n} star" + ("" if n == 1 else "s")) for n in range(1, 6)],
+        coerce=int,
+        validators=[InputRequired("Choose 1 to 5 stars.")],
+    )
+    comment = TextAreaField(
+        "Comment (optional)",
+        filters=[lambda v: v.strip() if v else v],
+        validators=[_no_nul, Optional(), Length(max=300, message="Comment must be at most 300 characters.")],
+    )
+    submit = SubmitField("Submit")

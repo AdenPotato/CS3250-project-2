@@ -163,3 +163,9 @@ header button {
 .stat-note {
   color: #555;
 }
+
+/* US10 rating form */
+.hint {
+  margin-top: -0.5rem;
+  color: #555;
+}
