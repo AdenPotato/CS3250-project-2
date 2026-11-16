@@ -6,6 +6,8 @@ Goal Statement: Complete US4, US7, US6 and US5, then the optional US8, US9 and U
 
 Stories (in order): US4 (8), US7 (5), US6 (3), US5 (5), then optional US8 (3), US9 (5), US10 (3) - 32 points. Sprint 2 runs 10/28/26 to 11/08/26 and takes the former Sprint 3, so capacity is 32 (16 per week). Optional stories start only once US4-US7 are done.
 
+Dates updated 11/15/26: after the due date moved to 11/15/26, Sprint 2 actually ran 11/02/26 to 11/15/26.
+
 ## Task breakdown
 
 | Issue | Task | Story | Owner | Status |
@@ -45,7 +47,7 @@ Stories (in order): US4 (8), US7 (5), US6 (3), US5 (5), then optional US8 (3), U
 | #55 | US10: manual tests | US10 | jdelagar | open |
 | #59 | Scrum: Sprint 2 records | scrum | AdenPotato | open |
 | #60 | Deploy: release v2 - end of Sprint 2 | deployment | AdenPotato | open |
-| #61 | Scrum: Sprint 3 records | scrum | AdenPotato | done |
-| #62 | Deploy: release v3 - end of Sprint 3 | deployment | - | done |
+| #61 | Scrum: Sprint 3 records | scrum | AdenPotato | not needed - Sprint 3 merged into Sprint 2 |
+| #62 | Deploy: release v3 - end of Sprint 3 | deployment | - | not needed - Sprint 3 merged into Sprint 2 |
 | #63 | Scrum: burndown chart | scrum | ellaevelynn | open |
 | #64 | Final project check | scrum | AdenPotato | open |

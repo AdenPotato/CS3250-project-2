@@ -12,7 +12,7 @@ No meeting today
 
 No meeting today
 
-# 11/05/2026-99:99
+# 11/05/2026 - time not recorded
 
 Participants: AL, IE, HY
 
@@ -36,11 +36,11 @@ Participants: IE, AL, EDO, HY
 
 Continued US4, feelong confident to wrap up in nect few days on this US
 
-# 11/010/2026-NA
+# 11/10/2026-NA
 
 No meeting this day
 
-# 11/11/2026-99:99
+# 11/11/2026 - time not recorded
 
 Participants: IE, AL, HY, JDG, EDO
 
