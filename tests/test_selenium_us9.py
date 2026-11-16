@@ -3,7 +3,7 @@ from datetime import datetime
 
 from selenium.webdriver.common.by import By
 
-from conftest import (BASE_URL, CAMPUS_TZ, confirm_pickup, end_window, field_error_shown, log_in, pickup_code_from_flash,
+from conftest import (BASE_URL, CAMPUS_TZ, confirm_pickup, end_window, field_error_shown, flash, log_in, pickup_code_from_flash,
                       post_listing, register, reserve, wait_for)
 
 STATS = ("listings-posted", "portions-posted", "portions-picked-up", "no-shows", "no-show-rate")
@@ -38,6 +38,7 @@ def test_us9_1_and_9_2_counts_and_no_show_rate(driver, accounts):
 
     log_in(driver, vendor)
     confirm_pickup(driver, code)
+    assert flash(driver, "success").startswith("Pickup confirmed")  # wait, or the next page load cuts the POST off
     end_window(missed_id)  # both reservations on it become no-shows
 
     today = datetime.now(CAMPUS_TZ).date().isoformat()
