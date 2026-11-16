@@ -6,6 +6,8 @@ Goal Statement: Complete US1, US2 and US3 - every acceptance criterion passing i
 
 Stories: US1 (5), US2 (5), US3 (3) - 13 points, capacity 16.
 
+Dates updated 11/15/26: after the due date moved to 11/15/26, Sprint 1 actually ran 10/24/26 to 11/01/26 and ended with the v1 release on 11/01/26.
+
 Re-plan on 10/27/26: Sprint 1 ends 10/27/26. Every open Sprint 1 issue stays in Sprint 1; the stories planned for Sprints 2 and 3 move to Sprint 2.
 
 ## Task breakdown

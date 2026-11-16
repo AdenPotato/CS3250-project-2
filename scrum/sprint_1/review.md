@@ -21,6 +21,8 @@ Participants: IE, EO, HY (in-class), all members outsdie of class.
 ## 3. Completed Deliverables (Product Increment)
 The following Product Backlog Items (PBIs) met the Definition of Done (DoD) and were demonstrated during the review:
 
+| ID | Description | Story | Status |
+| --- | --- | --- | --- |
 |US1| register and log in as either a student or a vendor | US1 | Done | 
 |US2| Post a surplus food listing | US2 | Done | 
 |US3| Browse available listings| US3| Done | 
