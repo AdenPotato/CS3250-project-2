@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
+from wtforms import DateField, IntegerField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
 from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, Optional, StopValidation, ValidationError
 
 from . import db
@@ -139,6 +139,20 @@ class ListingFilterForm(FlaskForm):
     location = SelectField(
         "Campus location", choices=[("", "Any location")] + [(loc, loc) for loc in CAMPUS_LOCATIONS]
     )
+
+
+class DashboardForm(FlaskForm):
+    # a GET form like the listing filters, so the chosen range stays in the URL (US9.1)
+    class Meta:
+        csrf = False
+
+    start = DateField("From", validators=[DataRequired("Enter a start date.")])
+    end = DateField("To", validators=[DataRequired("Enter an end date.")])
+    submit = SubmitField("Show")
+
+    def validate_end(self, field):
+        if field.data and self.start.data and field.data < self.start.data:
+            raise ValidationError("The end date cannot be before the start date.")
 
 
 class ReserveForm(FlaskForm):

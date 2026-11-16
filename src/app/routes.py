@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from functools import wraps
 
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
@@ -7,7 +7,8 @@ from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import IntegrityError
 
 from . import db
-from .forms import ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RatingForm, RegisterForm, ReserveForm
+from .campus_time import campus_to_utc, to_campus
+from .forms import DashboardForm, ListingFilterForm, ListingForm, LoginForm, PickupCodeForm, RatingForm, RegisterForm, ReserveForm
 from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, DietaryTag, Listing, Rating, Reservation, ReservationStatus, Role, User, mark_no_shows
 
 bp = Blueprint("main", __name__)
@@ -100,6 +101,62 @@ def student_home():
 @role_required(Role.VENDOR)
 def vendor_home():
     return render_template("vendor_home.html", title="Home")
+
+
+def impact_stats(vendor_id, start_utc, end_utc):
+    # US9.1: listings posted in [start, end) by creation date, and what happened to their portions.
+    # cancelled reservations were given back, so they do not count as reserved (US9.2)
+    posted = db.select(Listing.id).where(
+        Listing.vendor_id == vendor_id, Listing.creation_date >= start_utc, Listing.creation_date < end_utc
+    )
+    listings_posted, portions_posted = db.session.execute(
+        db.select(db.func.count(Listing.id), db.func.coalesce(db.func.sum(Listing.portions), 0)).where(
+            Listing.id.in_(posted)
+        )
+    ).one()
+
+    def portions_with(*statuses):
+        return db.session.scalar(
+            db.select(db.func.coalesce(db.func.sum(Reservation.portions), 0)).where(
+                Reservation.listing_id.in_(posted), Reservation.status.in_(statuses)
+            )
+        )
+
+    no_shows = db.session.scalar(
+        db.select(db.func.count(Reservation.id)).where(
+            Reservation.listing_id.in_(posted), Reservation.status == ReservationStatus.NO_SHOW
+        )
+    )
+    reserved = portions_with(ReservationStatus.ACTIVE, ReservationStatus.PICKED_UP, ReservationStatus.NO_SHOW)
+    no_show_portions = portions_with(ReservationStatus.NO_SHOW)
+    return {
+        "listings_posted": listings_posted,
+        "portions_posted": portions_posted,
+        "portions_reserved": reserved,
+        "portions_picked_up": portions_with(ReservationStatus.PICKED_UP),
+        "no_shows": no_shows,
+        "no_show_portions": no_show_portions,
+        # US9.3: an empty range has nothing reserved, so the rate is 0, not a division by zero
+        "no_show_rate": round(100 * no_show_portions / reserved, 1) if reserved else 0,
+    }
+
+
+@bp.route("/vendor/dashboard")
+@role_required(Role.VENDOR)
+def dashboard():
+    mark_no_shows()
+    form = DashboardForm(request.args)
+    today = to_campus(datetime.now(timezone.utc)).date()
+    if not request.args:
+        # the last 30 days by default, so the page shows something before a range is chosen
+        form.start.data, form.end.data = today - timedelta(days=29), today
+    stats = None
+    if not request.args or form.validate():
+        # the dates are campus days, so the range runs from campus midnight to the next midnight
+        start_utc = campus_to_utc(datetime.combine(form.start.data, time.min))
+        end_utc = campus_to_utc(datetime.combine(form.end.data + timedelta(days=1), time.min))
+        stats = impact_stats(current_user.id, start_utc, end_utc)
+    return render_template("vendor/dashboard.html", title="Impact Dashboard", form=form, stats=stats)
 
 
 def rating_summary(listing_ids):

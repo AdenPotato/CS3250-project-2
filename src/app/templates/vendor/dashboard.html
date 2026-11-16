@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_form.html" import field %}
+{% block content %}
+  <h1>Impact Dashboard</h1>
+  <p>Totals for the listings you posted between the two dates, inclusive, on the campus calendar.</p>
+  {# GET, so the chosen range is in the URL and the page can be bookmarked #}
+  <form id="dashboard-form" class="dashboard-range" method="get" action="{{ url_for('main.dashboard') }}" novalidate>
+    {{ field(form.start, "dashboard-start", type="date") }}
+    {{ field(form.end, "dashboard-end", type="date") }}
+    {{ form.submit(id="dashboard-submit") }}
+  </form>
+
+  {% if stats %}
+    {% set tiles = [
+      ("listings-posted", "Listings posted", stats.listings_posted),
+      ("portions-posted", "Portions posted", stats.portions_posted),
+      ("portions-picked-up", "Portions picked up", stats.portions_picked_up),
+      ("no-shows", "No-shows", stats.no_shows),
+      ("no-show-rate", "No-show rate", stats.no_show_rate ~ "%"),
+    ] %}
+    <div class="stat-tiles">
+      {% for id, label, value in tiles %}
+        <div class="stat-tile">
+          <span class="stat-value" id="stat-{{ id }}">{{ value }}</span>
+          <span class="stat-label">{{ label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="stat-note" id="stat-note">
+      No-show rate is {{ stats.no_show_portions }} no-show portions out of {{ stats.portions_reserved }} reserved portions.
+      Cancelled reservations are not counted as reserved.
+    </p>
+  {% endif %}
+{% endblock %}
