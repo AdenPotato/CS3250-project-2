@@ -2,6 +2,8 @@
 from datetime import datetime
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from conftest import (BASE_URL, CAMPUS_TZ, confirm_pickup, end_window, field_error_shown, flash, log_in, pickup_code_from_flash,
                       post_listing, register, reserve, wait_for)
@@ -14,7 +16,10 @@ def show_range(d, start, end):
     d.get(BASE_URL + "/vendor/dashboard")
     for field, value in (("dashboard-start", start), ("dashboard-end", end)):
         d.execute_script("arguments[0].value = arguments[1]", wait_for(d, By.ID, field), value)
+    before = d.find_element(By.ID, "dashboard-form")
     d.find_element(By.ID, "dashboard-submit").click()
+    # the page already shows the default range's tiles, so wait for it to be replaced
+    WebDriverWait(d, 10).until(EC.staleness_of(before))
 
 
 def stats(d):
@@ -33,8 +38,10 @@ def test_us9_1_and_9_2_counts_and_no_show_rate(driver, accounts):
     reserve(driver, picked_id, 2)
     code = pickup_code_from_flash(driver)
     reserve(driver, missed_id, 1)
+    pickup_code_from_flash(driver)  # wait for the reservation, or the next log_in cuts the POST off
     log_in(driver, accounts["student2"]["email"])
     reserve(driver, missed_id, 1)
+    pickup_code_from_flash(driver)
 
     log_in(driver, vendor)
     confirm_pickup(driver, code)
