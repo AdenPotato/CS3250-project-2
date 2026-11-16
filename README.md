@@ -174,8 +174,8 @@ Before Sprint 1 starts, your team estimates every story and ranks the backlog us
 | US6 | My reservations | 2 | 3 | .67 | 6 |
 | US7 | Confirm pickup | 3 | 5 |.60  | 7 |
 | US8 | Filter listings | 2 | 3 | .67 | 8 |
-| US9 | Impact dashboard | 1 | 5 | .20 |9  |
-| US10 | Rate a pickup | 1 | 3 | .33 | 10 |
+| US9 | Impact dashboard | 1 | 5 | .20 | 10 |
+| US10 | Rate a pickup | 1 | 3 | .33 | 9 |
 | **Total** |  -| 23 | 45 | - | - |
 
 Priority Score Formula: 
@@ -203,9 +203,9 @@ Justification (one or two sentences: team size, hours available, course load): W
 | Sprint | User stories (in order) | Story points planned | Points remaining after sprint | Dependencies checked (Y/N) |
 | --- | --- | --- | --- | --- |
 | Sprint 1 | US1 (5), US2 (5), US3 (3) | 13 | 32 | Y |
-| Sprint 2 | US4 (8), US7 (5), US6 (3), US5 (5), US8 (3), US9 (5), US10 (3) | 32 | 0 | Y |
+| Sprint 2 | US4 (8), US7 (5), US6 (3), US5 (5), US8 (3), US10 (3), US9 (5) | 32 | 0 | Y |
 | Sprint 3 | - (merged into Sprint 2 on 10/27/26) | 0 | 0 | - |
-| **Total** | All 7 Required + Optional US8, US9, US10 | 45 | — | — |
+| **Total** | All 7 Required + Optional US8, US10, US9 | 45 | — | — |
 
 Planned burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0.
 
