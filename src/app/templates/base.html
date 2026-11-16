@@ -9,7 +9,7 @@
 <body>
   {# endpoint, label - links appear as each story adds its route #}
   {% if current_user.is_authenticated and current_user.is_vendor %}
-    {% set links = [("main.my_listings", "My Listings"), ("main.new_listing", "Post a listing"), ("main.confirm_pickup", "Confirm pickup")] %}
+    {% set links = [("main.my_listings", "My Listings"), ("main.new_listing", "Post a listing"), ("main.confirm_pickup", "Confirm pickup"), ("main.dashboard", "Dashboard")] %}
   {% elif current_user.is_authenticated %}
     {% set links = [("main.listings", "Listings"), ("main.my_reservations", "My Reservations")] %}
   {% else %}

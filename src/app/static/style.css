@@ -125,3 +125,41 @@ header button {
   background: #ffffff;
   color: #2e7d32;
 }
+
+/* US9 impact dashboard */
+.dashboard-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  align-items: flex-end;
+}
+
+.dashboard-range button,
+.dashboard-range input[type="submit"] {
+  margin-bottom: 1rem;
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.stat-label,
+.stat-note {
+  color: #555;
+}
