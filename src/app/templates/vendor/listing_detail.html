@@ -37,6 +37,18 @@
     {% else %}
         <div class="alert alert-info">No reservations yet.</div>
     {% endif %}
+    <hr>
+    <h4>Ratings</h4>
+    {% if rating %}
+        <p id="listing-average-rating">Average: {{ rating[0] }}/5 from {{ rating[1] }} rating{{ "" if rating[1] == 1 else "s" }}</p>
+        <ul id="listing-comments">
+            {% for r in rated %}
+                <li class="rating-entry">{{ r.rating.stars }}/5 - {{ r.student.name }}{% if r.rating.comment %}: <span class="rating-comment">{{ r.rating.comment }}</span>{% endif %}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p id="listing-average-rating">No ratings yet.</p>
+    {% endif %}
     <a href="{{ url_for('main.my_listings') }}" class="btn btn-link">Back to My Listings</a>
 </div>
 {% endblock %}

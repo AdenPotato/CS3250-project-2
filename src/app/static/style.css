@@ -125,3 +125,9 @@ header button {
   background: #ffffff;
   color: #2e7d32;
 }
+
+/* US10 rating form */
+.hint {
+  margin-top: -0.5rem;
+  color: #555;
+}
