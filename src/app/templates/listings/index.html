@@ -4,11 +4,33 @@
 <div class="container mt-4">
     <h2>Available Listings</h2>
     <hr>
+    <form method="GET" action="{{ url_for('main.listings') }}" id="filter-form" class="border rounded p-3 mb-4 bg-light">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-7">
+                <span class="form-label d-block">{{ form.tags.label.text }}</span>
+                {% for subfield in form.tags %}
+                    {% set box_id = "filter-tag-" ~ subfield.data | replace(" ", "-") %}
+                    <div class="form-check form-check-inline">
+                        {{ subfield(class="form-check-input", id=box_id) }}
+                        {{ subfield.label(class="form-check-label", for_=box_id) }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-5">
+                {{ form.location.label(class="form-label", for_="filter-location") }}
+                {{ form.location(class="form-select", id="filter-location") }}
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="submit" id="filter-submit" class="btn btn-primary">Filter</button>
+            <a href="{{ url_for('main.listings') }}" id="clear-filters" class="btn btn-outline-secondary">Clear filters</a>
+        </div>
+    </form>
     {% if listings %}
         <div class="row">
             {% for listing in listings %}
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 listing-card" id="listing-{{ listing.id }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ listing.title }}</h5>
                         <p class="card-text text-muted">{{ listing.description }}</p>
@@ -16,7 +38,7 @@
                             <strong>Vendor:</strong> {{ listing.vendor.name }}<br>
                             <strong>Pickup Location:</strong> {{ listing.location }}<br>
                             <strong>Portions Remaining:</strong> {{ listing.portions_remaining }}<br>
-                            <strong>Pickup Window:</strong> {{ listing.pickup_start.strftime('%m/%d/%Y %I:%M %p') }} - {{ listing.pickup_end.strftime('%m/%d/%Y %I:%M %p') }}
+                            <strong>Pickup Window:</strong> {{ listing.pickup_start | campus }} - {{ listing.pickup_end | campus }}
                         </p>
                         {% if listing.tags %}
                         <p class="card-text">
@@ -25,6 +47,9 @@
                                 <span class="badge bg-secondary">{{ tag.name }}</span>
                             {% endfor %}
                         </p>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.is_student and has_endpoint('main.reserve_listing') %}
+                            <a href="{{ url_for('main.reserve_listing', listing_id=listing.id) }}" class="btn btn-primary">Reserve</a>
                         {% endif %}
                     </div>
                 </div>

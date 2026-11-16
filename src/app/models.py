@@ -148,6 +148,7 @@ class Reservation(db.Model):
 
     student = db.relationship("User", back_populates="reservations")
     listing = db.relationship("Listing", back_populates="reservations")
+    rating = db.relationship("Rating", back_populates="reservation", uselist=False)
 
     @staticmethod
     def generate_pickup_code():
@@ -156,6 +157,35 @@ class Reservation(db.Model):
             code = "".join(secrets.choice(alphabet) for _ in range(6))
             if not db.session.scalar(db.select(Reservation).filter_by(pickup_code=code)):
                 return code
+
+
+class Rating(db.Model):
+    __tablename__ = "ratings"
+    # one rating per reservation and 1-5 stars, enforced by PostgreSQL too (US10.1, US10.2)
+    __table_args__ = (db.CheckConstraint("stars BETWEEN 1 AND 5", name="stars_range"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    reservation_id = db.Column(db.ForeignKey("reservations.id"), unique=True, nullable=False)
+    stars = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.String(300))
+    created_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    reservation = db.relationship("Reservation", back_populates="rating")
+
+
+def mark_no_shows():
+    # US7.3: active reservations whose pickup window has ended become no-show. stored, not computed
+    # in templates, so every page and later counts read the same status from the database
+    ended = db.select(Listing.id).where(Listing.pickup_end <= datetime.now(timezone.utc))
+    db.session.execute(
+        db.update(Reservation)
+        .where(Reservation.status == ReservationStatus.ACTIVE, Reservation.listing_id.in_(ended))
+        .values(status=ReservationStatus.NO_SHOW)
+        .execution_options(synchronize_session=False)
+    )
+    db.session.commit()
 
 
 def ensure_dietary_tags():

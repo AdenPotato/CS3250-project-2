@@ -33,7 +33,7 @@
 
         <div class="mb-3">
             {{ form.location.label(class="form-label") }}
-            {{ form.location(class="form-control " ~ ("is-invalid" if form.location.errors else "")) }}
+            {{ form.location(class="form-select " ~ ("is-invalid" if form.location.errors else "")) }}
             {% for error in form.location.errors %}
                 <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}

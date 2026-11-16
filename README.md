@@ -29,11 +29,27 @@ The tests are black box: they talk to the running Compose app over HTTP, so star
 
 ```
 docker compose up --build -d
-pip install pytest
+pip install -r requirements-dev.txt
 pytest tests
 ```
 
 They expect the app at http://localhost:5000. To test another address, set `CAMPUSEATS_URL`, e.g. `CAMPUSEATS_URL=http://localhost:8000 pytest tests`. The database checks run `docker compose exec db psql`, so run them from the repository root; they are skipped if Docker is not available.
+
+**Selenium test (US1).** `tests/test_selenium_us1.py` is the automated black box test. It drives headless Chrome through registration and login and covers every US1 acceptance criterion, including the failure cases: a duplicate email and each empty field. It needs Google Chrome or Chromium installed; Selenium finds the matching driver itself. US1.4 (hashed passwords) cannot be seen in a browser, so that test reads the stored hash from PostgreSQL instead of calling the app. Run it on its own with:
+
+```
+pytest tests/test_selenium_us1.py -v
+```
+
+Without Chrome the Selenium tests are skipped locally; in CI (`CI` set) they fail instead, so a missing browser is never mistaken for a pass.
+
+**Selenium regression tests (US4-US7).** `tests/test_selenium_us4.py` to `test_selenium_us7.py` have one test per acceptance criterion of reserving, managing listings, my reservations and confirming pickups, failure cases included. They register their own accounts and post their own listings through the pages, so they pass on any database and on a second run. The shared helpers are in `tests/conftest.py`. A browser cannot make time pass, so the tests for an ended pickup window (US5.1, US6.3, US7.3) move that window into the past with `docker compose exec db psql`. They are regression checks run before each release; the graded manual evidence for these stories is still the click-throughs in `tests/manual-tests.md`. Run them with `pytest tests/test_selenium_us4.py tests/test_selenium_us5.py tests/test_selenium_us6.py tests/test_selenium_us7.py -v`.
+
+**Selenium regression tests (US8).** `tests/test_selenium_us8.py` checks the listing filters as a student. A vendor registered for the test posts four listings with known tags and locations, and the tests check which of them each filter shows: two tags together (US8.1), a location on its own and combined with tags (US8.2), and **Clear filters** bringing every listing back (US8.3). They also check that every card shown matches the filter, and that a filter nothing matches shows the empty message. Run it with `pytest tests/test_selenium_us8.py -v`.
+
+**Selenium regression tests (US9).** `tests/test_selenium_us9.py` checks the impact dashboard at `/vendor/dashboard`: a vendor registered for the test posts two listings, one is picked up and one ends with two no-shows, and the tiles must read 2 listings, 10 portions, 2 picked up, 2 no-shows and a 50.0% no-show rate. It also checks that an empty range shows zeros, that an end date before the start is a form error, and that students get 403. A listing counts in the range when it was posted (created) on one of the chosen campus days. The no-show rate is no-show portions over reserved portions, and cancelled reservations do not count as reserved. Run it with `pytest tests/test_selenium_us9.py -v`.
+
+**Selenium regression tests (US10).** `tests/test_selenium_us10.py` checks rating a pickup. A picked-up reservation gets a **Rate** button in My Reservations, which asks for 1 to 5 stars and an optional comment of up to 300 characters. The rating is shown on the card afterwards. A second rating, or a rating of a reservation that was not picked up, is refused. Vendors see the average and the count in My Listings, and the average plus every rating and comment on the listing's page. Run it with `pytest tests/test_selenium_us10.py -v`.
 
 # Overview
 
@@ -194,6 +210,8 @@ Justification (one or two sentences: team size, hours available, course load): <
 Planned burndown (points remaining): start 45, after Sprint 1 32, after Sprint 2 0.
 
 Re-plan on 10/27/26: Sprint 1 runs to 10/27/26 and Sprint 2 runs 10/28/26 to 11/08/26, taking every story planned for Sprints 2 and 3. Sprint 2 is twice as long as a one-week sprint, so its capacity is 32 points (16 per week).
+
+Dates updated 11/15/26: the due date moved to 11/15/26, so Sprint 1 ran 10/24/26 to 11/01/26 (v1 tagged 11/01/26) and Sprint 2 ran 11/02/26 to 11/15/26. Sprint 3 was never run; its stories were done in Sprint 2.
 
 # Sprint Boards
 

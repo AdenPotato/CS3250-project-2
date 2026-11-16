@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, PasswordField, RadioField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
-from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, StopValidation, ValidationError
+from wtforms import DateField, IntegerField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField, DateTimeLocalField, widgets
+from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, Optional, StopValidation, ValidationError
 
 from . import db
-from .models import Role, User
+from .campus_time import campus_to_utc, to_campus
+from .models import CAMPUS_LOCATIONS, DIETARY_TAGS, Role, User
 
 
 def _normalize_email(value):
@@ -17,6 +18,20 @@ def _no_nul(form, field):
     # StopValidation, not ValidationError, so validate_email never queries with this value
     if field.data and "\x00" in field.data:
         raise StopValidation("This field contains an invalid character.")
+
+
+class CampusDateTimeField(DateTimeLocalField):
+    # the browser sends campus wall-clock time; data holds it as aware UTC so it is stored
+    # and compared at the right instant (#95), and is shown back on the campus clock
+    def process_formdata(self, valuelist):
+        super().process_formdata(valuelist)
+        if self.data is not None:
+            self.data = campus_to_utc(self.data)
+
+    def _value(self):
+        if self.raw_data:
+            return " ".join(self.raw_data)
+        return to_campus(self.data).strftime(self.format[0]) if self.data else ""
 
 
 class RegisterForm(FlaskForm):
@@ -53,8 +68,12 @@ class LoginForm(FlaskForm):
 
 
 class ListingForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired("Enter a title."), Length(max=150)])
-    description = TextAreaField("Description", validators=[DataRequired("Enter a description.")])
+    # limits match the String(100) columns in models.py, so a long value is a form error, not a 500
+    title = StringField(
+        "Title",
+        validators=[_no_nul, DataRequired("Enter a title."), Length(max=100, message="Title must be at most 100 characters.")],
+    )
+    description = TextAreaField("Description", validators=[_no_nul, DataRequired("Enter a description.")])
     portions = IntegerField(
         "Portions Available",
         validators=[
@@ -62,7 +81,13 @@ class ListingForm(FlaskForm):
             NumberRange(min=1, max=100, message="Portions must be between 1 and 100."),
         ],
     )
-    location = StringField("Pickup Location", validators=[DataRequired("Enter a pickup location.")])
+    # a fixed campus list, so students can filter by exact location (US8.2); SelectField
+    # rejects any value not in the list with "Not a valid choice."
+    location = SelectField(
+        "Pickup Location",
+        choices=[("", "Choose a location")] + [(loc, loc) for loc in CAMPUS_LOCATIONS],
+        validators=[DataRequired("Choose a pickup location.")],
+    )
     dietary_tags = SelectMultipleField(
         "Dietary Tags",
         choices=[
@@ -75,20 +100,83 @@ class ListingForm(FlaskForm):
         widget=widgets.ListWidget(prefix_label=False),
         option_widget=widgets.CheckboxInput()
     )
-    window_start = DateTimeLocalField(
+    window_start = CampusDateTimeField(
         "Pickup Window Start", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup start time.")]
     )
-    window_end = DateTimeLocalField(
+    window_end = CampusDateTimeField(
         "Pickup Window End", format="%Y-%m-%dT%H:%M", validators=[DataRequired("Enter pickup end time.")]
     )
     submit = SubmitField("Post Listing")
 
+    # the edit route sets this, so a listing whose window has already opened can still be saved
+    # as long as its start is left as it was (US5.2)
+    current_start = None
+
     def validate_window_start(self, field):
-        if field.data and field.data < datetime.now():
+        if field.data and self.current_start and field.data == self.current_start.replace(second=0, microsecond=0):
+            return
+        if field.data and field.data < datetime.now(timezone.utc):
             raise ValidationError("Pickup window start cannot be in the past.")
 
     def validate_window_end(self, field):
-        if field.data and field.data < datetime.now():
+        if field.data and field.data < datetime.now(timezone.utc):
             raise ValidationError("Pickup window end cannot be in the past.")
         if field.data and self.window_start.data and field.data <= self.window_start.data:
             raise ValidationError("Pickup window end must be after the start time.")
+
+
+class ListingFilterForm(FlaskForm):
+    # read from the query string on GET /listings, so filters show in the URL and need no CSRF
+    class Meta:
+        csrf = False
+
+    tags = SelectMultipleField(
+        "Dietary tags",
+        choices=[(t, t.title()) for t in DIETARY_TAGS],
+        widget=widgets.ListWidget(prefix_label=False),
+        option_widget=widgets.CheckboxInput(),
+    )
+    location = SelectField(
+        "Campus location", choices=[("", "Any location")] + [(loc, loc) for loc in CAMPUS_LOCATIONS]
+    )
+
+
+class DashboardForm(FlaskForm):
+    # a GET form like the listing filters, so the chosen range stays in the URL (US9.1)
+    class Meta:
+        csrf = False
+
+    start = DateField("From", validators=[DataRequired("Enter a start date.")])
+    end = DateField("To", validators=[DataRequired("Enter an end date.")])
+    submit = SubmitField("Show")
+
+    def validate_end(self, field):
+        if field.data and self.start.data and field.data < self.start.data:
+            raise ValidationError("The end date cannot be before the start date.")
+
+
+class ReserveForm(FlaskForm):
+    choices = [(1, "1 portion"), (2, "2 portions")]
+    portions = RadioField("Portions to Reserve", choices=choices, coerce=int, validators=[InputRequired()])
+    submit = SubmitField("Reserve")
+
+
+class PickupCodeForm(FlaskForm):
+    # _no_nul first: the code is looked up in postgres, which rejects a NUL byte with a 500 (US7.2)
+    pickup_code = StringField("Pickup Code", validators=[_no_nul, DataRequired("Enter the pickup code.")])
+    submit = SubmitField("Confirm Pickup")
+
+
+class RatingForm(FlaskForm):
+    stars = RadioField(
+        "Stars",
+        choices=[(n, f"{n} star" + ("" if n == 1 else "s")) for n in range(1, 6)],
+        coerce=int,
+        validators=[InputRequired("Choose 1 to 5 stars.")],
+    )
+    comment = TextAreaField(
+        "Comment (optional)",
+        filters=[lambda v: v.strip() if v else v],
+        validators=[_no_nul, Optional(), Length(max=300, message="Comment must be at most 300 characters.")],
+    )
+    submit = SubmitField("Submit")

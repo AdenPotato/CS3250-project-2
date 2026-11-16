@@ -6,6 +6,8 @@ Goal Statement: Complete US1, US2 and US3 - every acceptance criterion passing i
 
 Stories: US1 (5), US2 (5), US3 (3) - 13 points, capacity 16.
 
+Dates updated 11/15/26: after the due date moved to 11/15/26, Sprint 1 actually ran 10/24/26 to 11/01/26 and ended with the v1 release on 11/01/26.
+
 Re-plan on 10/27/26: Sprint 1 ends 10/27/26. Every open Sprint 1 issue stays in Sprint 1; the stories planned for Sprints 2 and 3 move to Sprint 2.
 
 ## Task breakdown
@@ -24,18 +26,18 @@ Re-plan on 10/27/26: Sprint 1 ends 10/27/26. Every open Sprint 1 issue stays in 
 | #12 | US1: login, logout and role home pages | US1 | AdenPotato | done |
 | #13 | US1: base layout and nav templates | US1 | AdenPotato | done |
 | #14 | US1: manual tests | US1 | AdenPotato | done |
-| #15 | US2: post a surplus food listing | US2 | ellaevelynn | open |
+| #15 | US2: post a surplus food listing | US2 | ellaevelynn | done |
 | #16 | US2: listing and dietary tag models | US2 | AdenPotato | done |
 | #17 | US2: new listing form, validation and vendor-only route | US2 | ellaevelynn | done |
-| #18 | US2: new listing template | US2 | ellaevelynn | open |
-| #19 | US2: manual tests | US2 | ellaevelynn | open |
-| #20 | US3: browse available listings | US3 | damian-ortiz-elijah | open |
-| #21 | US3: available listings query and route | US3 | damian-ortiz-elijah | open |
-| #22 | US3: listings page template with empty state | US3 | ellaevelynn | open |
-| #23 | US3: manual tests | US3 | red-kaleena | open |
+| #18 | US2: new listing template | US2 | ellaevelynn | done |
+| #19 | US2: manual tests | US2 | ellaevelynn | done |
+| #20 | US3: browse available listings | US3 | damian-ortiz-elijah | done |
+| #21 | US3: available listings query and route | US3 | damian-ortiz-elijah | done |
+| #22 | US3: listings page template with empty state | US3 | ellaevelynn | done |
+| #23 | US3: manual tests | US3 | red-kaleena | done |
 | #56 | Scrum: backlog scoring and release plan | scrum | ellaevelynn | done |
-| #57 | Scrum: Sprint 1 records | scrum | AdenPotato | open |
-| #58 | Deploy: release v1 - end of Sprint 1 | deployment | AdenPotato | open |
+| #57 | Scrum: Sprint 1 records | scrum | AdenPotato | done |
+| #58 | Deploy: release v1 - end of Sprint 1 | deployment | AdenPotato | done |
 | #70 | Tooling: remove the commit format check | tooling | AdenPotato | done |
-| #76 | US1: handle NUL bytes, CSRF failures and logged-in register | US1 | AdenPotato | open |
-| #82 | Scrum: re-plan into two sprints and fill sprint planning records | scrum | AdenPotato | open |
+| #76 | US1: handle NUL bytes, CSRF failures and logged-in register | US1 | AdenPotato | done |
+| #82 | Scrum: re-plan into two sprints and fill sprint planning records | scrum | AdenPotato | done |
