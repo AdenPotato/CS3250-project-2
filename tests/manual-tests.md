@@ -97,3 +97,7 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US7 | 1: valid code during the window marks picked up, shows student and portions | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against a fresh `docker compose down -v && docker compose up --build` with the seed accounts; result as the criterion states |
 | US7 | 2: unknown, other vendor's, used and cancelled codes rejected | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against a fresh `docker compose down -v && docker compose up --build` with the seed accounts; result as the criterion states |
 | US7 | 3: ended window shows active reservations as no-show | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against a fresh `docker compose down -v && docker compose up --build` with the seed accounts; result as the criterion states |
+
+| US8 | 1: Dietary tags filter listings correctly | Elijah Damian-Ortiz | 11/15/26 | passed | Selected Vegan and Gluten-Free; only Fruit cups appeared. |
+| US8 | 2: Campus location combined with dietary tags | Elijah Damian-Ortiz | 11/15/26 | passed | Selected Student Union and Vegan; only Day-old bagels appeared. |
+| US8 | 3: Clear filters restores available listings | Elijah Damian-Ortiz | 11/15/26 | passed | Clicked Clear filters; all five available listings returned. |
