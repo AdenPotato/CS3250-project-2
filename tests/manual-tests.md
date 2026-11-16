@@ -101,3 +101,12 @@ Each row is one acceptance criterion clicked through by hand against `docker com
 | US8 | 1: Dietary tags filter listings correctly | Elijah Damian-Ortiz | 11/15/26 | passed | Selected Vegan and Gluten-Free; only Fruit cups appeared. |
 | US8 | 2: Campus location combined with dietary tags | Elijah Damian-Ortiz | 11/15/26 | passed | Selected Student Union and Vegan; only Day-old bagels appeared. |
 | US8 | 3: Clear filters restores available listings | Elijah Damian-Ortiz | 11/15/26 | passed | Clicked Clear filters; all five available listings returned. |
+| US8 | 1: only listings with all selected dietary tags shown | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US8 | 2: location filter, alone and combined with dietary tags | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US8 | 3: Clear filters shows all available listings again | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US9 | 1: date range shows listings posted, portions posted, portions picked up, no-show count | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US9 | 2: no-show rate shown as a percentage of reserved portions | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US9 | 3: range with no data shows 0 everywhere, no error | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US10 | 1: 1-5 stars and optional comment up to 300 characters stored for a picked-up reservation | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US10 | 2: rated only once; reservations in other statuses cannot be rated | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
+| US10 | 3: vendor sees average rating and comments per listing | Aden Lytle | 11/15/26 | passed | clicked through by hand in the browser against the Docker Compose deployment; result as the criterion states |
