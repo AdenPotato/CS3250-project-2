@@ -2,9 +2,9 @@ Date/Time: 11/02/26
 
 Participants: Aden Lytle (AdenPotato), Johnny De La Garza (jdelagar), Isabella Eaton (ellaevelynn), Elijah Damian-Ortiz (damian-ortiz-elijah), red-kaleena
 
-Goal Statement: Complete US4, US7, US6 and US5, then the optional US8, US9 and US10 - every acceptance criterion passing in Docker Compose - and release v2.
+Goal Statement: Complete US4, US7, US6 and US5, then the optional US8, US10 and US9 - every acceptance criterion passing in Docker Compose - and release v2.
 
-Stories (in order): US4 (8), US7 (5), US6 (3), US5 (5), then optional US8 (3), US9 (5), US10 (3) - 32 points. Sprint 2 runs 10/28/26 to 11/08/26 and takes the former Sprint 3, so capacity is 32 (16 per week). Optional stories start only once US4-US7 are done.
+Stories (in order): US4 (8), US7 (5), US6 (3), US5 (5), then optional US8 (3), US10 (3), US9 (5) - 32 points. Sprint 2 runs 10/28/26 to 11/08/26 and takes the former Sprint 3, so capacity is 32 (16 per week). Optional stories start only once US4-US7 are done.
 
 Dates updated 11/15/26: after the due date moved to 11/15/26, Sprint 2 actually ran 11/02/26 to 11/15/26.
 
