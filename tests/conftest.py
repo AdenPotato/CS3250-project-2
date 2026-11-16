@@ -128,7 +128,8 @@ def _local(dt):
     return dt.strftime("%Y-%m-%dT%H:%M")
 
 
-def post_listing(d, portions=5, location="Student Union", start_in=timedelta(hours=1), length=timedelta(hours=2)):
+def post_listing(d, portions=5, location="Student Union", start_in=timedelta(hours=1), length=timedelta(hours=2),
+                 tags=()):
     """Post a listing as the signed-in vendor and return (id, title)."""
     title = f"Sel {uuid.uuid4().hex[:8]}"
     start = datetime.now(CAMPUS_TZ).replace(second=0, microsecond=0) + start_in
@@ -137,6 +138,8 @@ def post_listing(d, portions=5, location="Student Union", start_in=timedelta(hou
     d.find_element(By.ID, "description").send_keys("Made by the Selenium tests.")
     d.find_element(By.ID, "portions").send_keys(str(portions))
     Select(d.find_element(By.ID, "location")).select_by_value(location)
+    for tag in tags:
+        d.find_element(By.CSS_SELECTOR, f'input[name="dietary_tags"][value="{tag}"]').click()
     # Chrome's datetime-local picker takes locale-specific keystrokes, so set the value the
     # way the picker does and let the form submit it as typed
     for field, value in (("window_start", start), ("window_end", start + length)):
